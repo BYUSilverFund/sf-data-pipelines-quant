@@ -1,5 +1,5 @@
 from datetime import date
-from pipelines.utils import crsp_schema
+from pipelines.utils import crsp_v2_schema
 import polars as pl
 import wrds
 from tqdm import tqdm
@@ -32,7 +32,7 @@ def load_crsp_v2_daily_df(start_date: date, end_date: date) -> pl.DataFrame:
             ;
             """
     )
-    df = pl.from_pandas(df, schema_overrides=crsp_schema)
+    df = pl.from_pandas(df, schema_overrides=crsp_v2_schema)
 
     return df
 
@@ -47,5 +47,5 @@ def crsp_v2_daily_backfill_flow(
             start_date=date(year, 1, 1), end_date=date(year, 12, 31)
         )
 
-        database.crsp_daily_table.create_if_not_exists(year)
-        database.crsp_daily_table.upsert(year, df)
+        database.crsp_v2_daily_table.create_if_not_exists(year)
+        database.crsp_v2_daily_table.upsert(year, df)

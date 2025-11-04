@@ -121,6 +121,25 @@ crsp_schema = {
     "exchcd": pl.Int64,
 }
 
+crsp_v2_schema = {
+    "date": pl.Date,
+    "permno": pl.Int64,
+    "cusip": pl.String,
+    "ticker": pl.String,
+    "ret": pl.Float64,
+    "retx": pl.Float64,
+    "prc": pl.Float64,
+    "vol": pl.Int64,
+    "open": pl.Float64,
+    "high": pl.Float64,
+    "low": pl.Float64,
+    "close": pl.Float64,
+    "shrout": pl.Int64,
+    "ticker": pl.String,
+    "primaryexch": pl.String,
+    "securitytype": pl.String,
+}
+
 
 def get_last_market_date(
     current_date: date | None = None, n_days: int = 1

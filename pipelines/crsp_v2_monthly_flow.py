@@ -1,5 +1,5 @@
 from datetime import date
-from pipelines.utils import crsp_schema
+from pipelines.utils import crsp_v2_schema
 import polars as pl
 import wrds
 from tqdm import tqdm
@@ -28,7 +28,7 @@ def load_crsp_v2_monthly_df(start_date: date, end_date: date) -> pl.DataFrame:
             ;
         """
     )
-    df = pl.from_pandas(df, schema_overrides=crsp_schema)
+    df = pl.from_pandas(df, schema_overrides=crsp_v2_schema)
 
     return df
 
@@ -43,5 +43,5 @@ def crsp_v2_monthly_backfill_flow(
     for year in tqdm(years, desc="CRSP Monthly"):
         year_df = df.filter(pl.col("date").dt.year().eq(year))
 
-        database.crsp_monthly_table.create_if_not_exists(year)
-        database.crsp_monthly_table.upsert(year, year_df)
+        database.crsp_v2_monthly_table.create_if_not_exists(year)
+        database.crsp_v2_monthly_table.upsert(year, year_df)

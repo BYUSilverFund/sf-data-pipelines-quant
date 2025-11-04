@@ -266,6 +266,52 @@ class Database:
             },
             ids=["date", "permno"],
         )
+    
+    @property
+    def crsp_v2_monthly_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="crsp_monthly",
+            schema={
+                "date": pl.Date,
+                "permno": pl.Int64,
+                "ticker": pl.String,
+                "cusip": pl.String,
+                "ret": pl.Float64,
+                "retx": pl.Float64,
+                "prc": pl.Float64,
+                "vol": pl.Int64,
+                "shrout": pl.Int64,
+                "primaryexch": pl.String,
+                "securitytype": pl.String
+            },
+            ids=["date", "permno"],
+        )
+    
+    @property
+    def crsp_v2_daily_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="crsp_daily",
+            schema={
+                "date": pl.Date,
+                "permno": pl.Int64,
+                "cusip": pl.String,
+                "ticker": pl.String,
+                "ret": pl.Float64,
+                "retx": pl.Float64,
+                "prc": pl.Float64,
+                "vol": pl.Int64,
+                "open": pl.Float64,
+                "high": pl.Float64,
+                "low": pl.Float64,
+                "close": pl.Float64,
+                "shrout": pl.Int64,
+                "primaryexch": pl.String,
+                "securitytype": pl.String
+            },
+            ids=["date", "permno"],
+        )
 
     @property
     def factors_table(self) -> Table:
