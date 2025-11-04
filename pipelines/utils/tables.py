@@ -271,7 +271,7 @@ class Database:
     def crsp_v2_monthly_table(self) -> Table:
         return Table(
             database=self._database_name,
-            name="crsp_monthly",
+            name="crsp_v2_monthly",
             schema={
                 "date": pl.Date,
                 "permno": pl.Int64,
@@ -292,7 +292,7 @@ class Database:
     def crsp_v2_daily_table(self) -> Table:
         return Table(
             database=self._database_name,
-            name="crsp_daily",
+            name="crsp_v2_daily",
             schema={
                 "date": pl.Date,
                 "permno": pl.Int64,
