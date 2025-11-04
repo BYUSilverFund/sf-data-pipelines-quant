@@ -5,7 +5,9 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "boto3>=1.40.65",
     "click>=8.3.0",
+    "exchange-calendars>=4.11.2",
     "numpy>=2.3.4",
     "polars>=1.35.1",
     "python-dotenv>=1.2.1",

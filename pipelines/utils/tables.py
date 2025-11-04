@@ -1,9 +1,9 @@
 import polars as pl
 import os
 from dotenv import load_dotenv
-from sf_data_pipelines.utils.factors import factors
+from pipelines.utils.factors import factors
 from typing import Optional
-from sf_data_pipelines.utils.enums import DatabaseName
+from pipelines.utils.enums import DatabaseName
 
 
 class Table:
