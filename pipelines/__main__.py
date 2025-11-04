@@ -4,9 +4,7 @@ from pipelines.all_pipelines import (
     barra_backfill_pipeline,
     ftse_backfill_pipeline,
     crsp_backfill_pipeline,
-    covariance_matrix_pipeline,
     barra_daily_pipeline,
-    # strategy_backfill_pipeline
 )
 from pipelines.utils.enums import DatabaseName
 from pipelines.utils.tables import Database
@@ -148,13 +146,6 @@ def ftse(pipeline_type, database, start, end):
             database_instance = Database(database_name)
 
             ftse_backfill_pipeline(start, end, database_instance)
-
-
-@cli.command()
-def covariance_matrix():
-    click.echo(f"Running covariance matrix daily flow: {dt.date.today()}.")
-    covariance_matrix_pipeline()
-    click.echo("Flow completed successfully!")
 
 
 if __name__ == "__main__":
