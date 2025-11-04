@@ -20,6 +20,8 @@ from pipelines.barra_volume_flow import barra_volume_history_flow, barra_volume_
 from pipelines.crsp_daily_flow import crsp_daily_backfill_flow
 from pipelines.crsp_monthly_flow import crsp_monthly_backfill_flow
 from pipelines.crsp_events_flow import crsp_events_backfill_flow
+from pipelines.crsp_v2_daily_flow import crsp_v2_daily_backfill_flow
+from pipelines.crsp_v2_monthly_flow import crsp_v2_monthly_backfill_flow
 from pipelines.barra_factors_flow import barra_factors_daily_flow
 import datetime as dt
 from pipelines.utils.tables import Database
@@ -75,6 +77,13 @@ def crsp_history_flow(
     crsp_monthly_backfill_flow(start_date, end_date, database)
     crsp_daily_backfill_flow(start_date, end_date, database)
 
+def crsp_v2_history_flow(
+    start_date: dt.date, end_date: dt.date, database: Database
+) -> None:
+    """Note: requires logging in to WRDS when running."""
+    crsp_v2_daily_backfill_flow(start_date, end_date, database)
+    crsp_v2_monthly_backfill_flow(start_date, end_date, database)
+
 
 def barra_daily_pipeline(database: Database) -> None:
     barra_daily_flow(database)
@@ -98,3 +107,8 @@ def crsp_backfill_pipeline(
     start_date: dt.date, end_date: dt.date, database: Database
 ) -> None:
     crsp_history_flow(start_date, end_date, database)
+
+def crsp_v2_backfill_pipeline(
+    start_date: dt.date, end_date: dt.date, database: Database
+) -> None:
+    crsp_v2_history_flow(start_date, end_date, database)
