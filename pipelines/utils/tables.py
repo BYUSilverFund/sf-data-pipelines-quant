@@ -333,12 +333,10 @@ class Database:
             schema={
                 "date": pl.Date,
                 "barrid": pl.String,
-                "name": pl.String,
-                "signal": pl.Float64,
-                "score": pl.Float64,
-                "alpha": pl.Float64,
+                "signal_name": pl.String,
+                "signal_value": pl.Float64,
             },
-            ids=["date", "barrid", "name"],
+            ids=["date", "barrid", "signal_name"],
         )
 
     @property
