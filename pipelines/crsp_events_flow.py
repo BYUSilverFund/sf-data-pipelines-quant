@@ -6,8 +6,8 @@ from tqdm import tqdm
 from pipelines.utils.tables import Database
 
 
-def load_crsp_events_df(start_date: date, end_date: date) -> pl.DataFrame:
-    wrds_db = wrds.Connection(wrds_username="amh1124")
+def load_crsp_events_df(start_date: date, end_date: date, user: str) -> pl.DataFrame:
+    wrds_db = wrds.Connection(wrds_username=user)
 
     df = wrds_db.raw_sql(
         f"""
@@ -29,11 +29,11 @@ def load_crsp_events_df(start_date: date, end_date: date) -> pl.DataFrame:
 
 
 def crsp_events_backfill_flow(
-    start_date: date, end_date: date, database: Database
+    start_date: date, end_date: date, database: Database, user: str
 ) -> None:
     years = list(range(start_date.year, end_date.year + 1))
 
-    df = load_crsp_events_df(start_date, end_date)
+    df = load_crsp_events_df(start_date, end_date, user)
 
     for year in tqdm(years, desc="CRSP Events"):
         year_df = df.filter(pl.col("date").dt.year().eq(year))
