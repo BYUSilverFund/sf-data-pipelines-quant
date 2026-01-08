@@ -10,6 +10,9 @@ from pipelines.all_pipelines import (
 from pipelines.utils.enums import DatabaseName
 from pipelines.utils.tables import Database
 
+from dotenv import load_dotenv
+import os
+
 # Valid options
 VALID_DATABASES = ["research", "production", "development"]
 PIPELINE_TYPES = ["backfill", "update"]
@@ -95,6 +98,15 @@ def barra(pipeline_type, database, start, end):
     help="End date (YYYY-MM-DD).",
 )
 def crsp(pipeline_type, database, start, end):
+    load_dotenv(override=True)
+    
+    user = os.getenv("WRDS_USER")
+    if user is None:
+        raise EnvironmentError(
+            "Missing required environment variable: WRDS_USER. "
+            "Check your .env file."
+        )
+
     match pipeline_type:
         case "backfill":
             start = start.date() if hasattr(start, "date") else start
@@ -105,7 +117,7 @@ def crsp(pipeline_type, database, start, end):
             database_name = DatabaseName(database)
             database_instance = Database(database_name)
 
-            crsp_backfill_pipeline(start, end, database_instance)
+            crsp_backfill_pipeline(start, end, database_instance, user)
 
 
 @cli.command()
@@ -136,6 +148,15 @@ def crsp(pipeline_type, database, start, end):
     help="End date (YYYY-MM-DD).",
 )
 def crsp_v2(pipeline_type, database, start, end):
+    load_dotenv(override=True)
+    
+    user = os.getenv("WRDS_USER")
+    if user is None:
+        raise EnvironmentError(
+            "Missing required environment variable: WRDS_USER. "
+            "Check your .env file."
+        )
+
     match pipeline_type:
         case "backfill":
             start = start.date() if hasattr(start, "date") else start
@@ -146,7 +167,7 @@ def crsp_v2(pipeline_type, database, start, end):
             database_name = DatabaseName(database)
             database_instance = Database(database_name)
 
-            crsp_v2_backfill_pipeline(start, end, database_instance)
+            crsp_v2_backfill_pipeline(start, end, database_instance, user)
 
 @cli.command()
 @click.argument(
@@ -176,6 +197,15 @@ def crsp_v2(pipeline_type, database, start, end):
     help="End date (YYYY-MM-DD).",
 )
 def ftse(pipeline_type, database, start, end):
+    load_dotenv(override=True)
+    
+    user = os.getenv("WRDS_USER")
+    if user is None:
+        raise EnvironmentError(
+            "Missing required environment variable: WRDS_USER. "
+            "Check your .env file."
+        )
+
     match pipeline_type:
         case "backfill":
             start = start.date() if hasattr(start, "date") else start
@@ -186,7 +216,7 @@ def ftse(pipeline_type, database, start, end):
             database_name = DatabaseName(database)
             database_instance = Database(database_name)
 
-            ftse_backfill_pipeline(start, end, database_instance)
+            ftse_backfill_pipeline(start, end, database_instance, user)
 
 
 if __name__ == "__main__":

@@ -63,26 +63,26 @@ def id_mappings_flow(database: Database) -> None:
 
 
 def ftse_history_flow(
-    start_date: dt.date, end_date: dt.date, database: Database
+    start_date: dt.date, end_date: dt.date, database: Database, user: str
 ) -> None:
     """Note: requires logging in to WRDS when running."""
-    ftse_russell_backfill_flow(start_date, end_date, database)
+    ftse_russell_backfill_flow(start_date, end_date, database, user)
 
 
 def crsp_history_flow(
-    start_date: dt.date, end_date: dt.date, database: Database
+    start_date: dt.date, end_date: dt.date, database: Database, user: str
 ) -> None:
     """Note: requires logging in to WRDS when running."""
-    crsp_events_backfill_flow(start_date, end_date, database)
-    crsp_monthly_backfill_flow(start_date, end_date, database)
-    crsp_daily_backfill_flow(start_date, end_date, database)
+    crsp_events_backfill_flow(start_date, end_date, database, user)
+    crsp_monthly_backfill_flow(start_date, end_date, database, user)
+    crsp_daily_backfill_flow(start_date, end_date, database, user)
 
 def crsp_v2_history_flow(
-    start_date: dt.date, end_date: dt.date, database: Database
+    start_date: dt.date, end_date: dt.date, database: Database, user: str
 ) -> None:
     """Note: requires logging in to WRDS when running."""
-    crsp_v2_daily_backfill_flow(start_date, end_date, database)
-    crsp_v2_monthly_backfill_flow(start_date, end_date, database)
+    crsp_v2_daily_backfill_flow(start_date, end_date, database, user)
+    crsp_v2_monthly_backfill_flow(start_date, end_date, database, user)
 
 
 def barra_daily_pipeline(database: Database) -> None:
@@ -98,17 +98,17 @@ def barra_backfill_pipeline(
 
 
 def ftse_backfill_pipeline(
-    start_date: dt.date, end_date: dt.date, database: Database
+    start_date: dt.date, end_date: dt.date, database: Database, user: str
 ) -> None:
-    ftse_history_flow(start_date, end_date, database)
+    ftse_history_flow(start_date, end_date, database, user)
 
 
 def crsp_backfill_pipeline(
-    start_date: dt.date, end_date: dt.date, database: Database
+    start_date: dt.date, end_date: dt.date, database: Database, user: str
 ) -> None:
-    crsp_history_flow(start_date, end_date, database)
+    crsp_history_flow(start_date, end_date, database, user)
 
 def crsp_v2_backfill_pipeline(
-    start_date: dt.date, end_date: dt.date, database: Database
+    start_date: dt.date, end_date: dt.date, database: Database, user: str
 ) -> None:
-    crsp_v2_history_flow(start_date, end_date, database)
+    crsp_v2_history_flow(start_date, end_date, database, user)

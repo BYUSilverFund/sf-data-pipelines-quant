@@ -6,9 +6,9 @@ from tqdm import tqdm
 from pipelines.utils.tables import Database
 
 
-def load_ftse_russell_df(start_date: date, end_date: date) -> pl.DataFrame:
+def load_ftse_russell_df(start_date: date, end_date: date, user: str) -> pl.DataFrame:
     """Load FTSE Russell data from WRDS for the given date range."""
-    wrds_db = wrds.Connection(wrds_username="amh1124")
+    wrds_db = wrds.Connection(wrds_username=user)
 
     df = wrds_db.raw_sql(
         f"""
@@ -83,7 +83,7 @@ def get_in_universe_fields(database: Database, df_ftse: pl.DataFrame) -> pl.Data
 
 
 def ftse_russell_backfill_flow(
-    start_date: date, end_date: date, database: Database
+    start_date: date, end_date: date, database: Database, user: str
 ) -> None:
     """
     Flow for orchestrating FTSE Russell backfill.
@@ -92,7 +92,7 @@ def ftse_russell_backfill_flow(
     then updates files by year.
     """
     # Load all FTSE data for the entire date range
-    raw_df = load_ftse_russell_df(start_date=start_date, end_date=end_date)
+    raw_df = load_ftse_russell_df(start_date=start_date, end_date=end_date, user=user)
     clean_df = clean(raw_df)
     
     # Compute in_universe fields once for all data
