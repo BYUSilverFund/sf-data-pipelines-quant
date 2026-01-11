@@ -1,5 +1,9 @@
 # Silver Fund Data Pipeline Repository
 
+## Infrastructure Overview
+
+![Infrastructure](graphics/sf-pipelines-infrastructure.png)
+
 ## Setup
 1. Initialize Python virtual environment
 
