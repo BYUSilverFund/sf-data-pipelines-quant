@@ -10,6 +10,8 @@ from pipelines.all_pipelines import (
 from pipelines.utils.enums import DatabaseName
 from pipelines.utils.tables import Database
 
+from pipelines.utils.security import guard_production_backfill
+
 from dotenv import load_dotenv
 import os
 
@@ -49,6 +51,8 @@ def cli():
     help="End date (YYYY-MM-DD).",
 )
 def barra(pipeline_type, database, start, end):
+    guard_production_backfill(database, pipeline_type)
+    
     match pipeline_type:
         case "backfill":
             start = start.date() if hasattr(start, "date") else start
@@ -98,6 +102,8 @@ def barra(pipeline_type, database, start, end):
     help="End date (YYYY-MM-DD).",
 )
 def crsp(pipeline_type, database, start, end):
+    guard_production_backfill(database, pipeline_type)
+    
     load_dotenv(override=True)
     
     user = os.getenv("WRDS_USER")
@@ -148,6 +154,8 @@ def crsp(pipeline_type, database, start, end):
     help="End date (YYYY-MM-DD).",
 )
 def crsp_v2(pipeline_type, database, start, end):
+    guard_production_backfill(database, pipeline_type)
+    
     load_dotenv(override=True)
     
     user = os.getenv("WRDS_USER")
@@ -197,6 +205,8 @@ def crsp_v2(pipeline_type, database, start, end):
     help="End date (YYYY-MM-DD).",
 )
 def ftse(pipeline_type, database, start, end):
+    guard_production_backfill(database, pipeline_type)
+    
     load_dotenv(override=True)
     
     user = os.getenv("WRDS_USER")
