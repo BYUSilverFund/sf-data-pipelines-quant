@@ -2,6 +2,8 @@ import datetime as dt
 from pipelines.utils.tables import Database
 import polars as pl
 from pipelines.signal_flows.reversal_flow import get_assets_signal
+from pipelines.utils.enums import DatabaseName
+from pipelines.components.signals import get_signal
 
 def momentum_backfill_flow(
     start_date: dt.date, 
@@ -37,7 +39,7 @@ def momentum_backfill_flow(
 
         # upsert into database
         database.signals_table.create_if_not_exists(year)
-        database.signals_table.upsert(year, rows=year_df)
+        database.signals_table.upsert(year, rows=signals_df_year)
 
 
 if __name__ == "__main__":
