@@ -10,11 +10,9 @@ import dataframely as dy
 def get_assets_signal(
     start_date: dt.date,
     end_date: dt.date,
-    signal_name: str
+    lookback: int
 ) -> pl.DataFrame:
     """"""
-    signal = get_signal(signal_name)
-    lookback_days = signal.lookback_days
 
     columns = [
         "date",
@@ -23,11 +21,12 @@ def get_assets_signal(
         "return",
         "predicted_beta",
         "specific_risk",
+        "in_universe"
     ]
 
     asset_data = (
         sfd.load_assets(
-            start=(start_date - dt.timedelta(days=lookback_days * 2)),
+            start=(start_date - dt.timedelta(days=lookback * 2)),
             end=end_date, 
             columns=columns, 
             in_universe=True
@@ -64,7 +63,7 @@ def reversal_backfill_flow(
             .with_columns(
                 pl.lit(signal.name).alias("signal_name")
             )
-            .select(["date", "barrid", "ticker", "signal_name", f"{signal.name}"])
+            .select(["date", "barrid", "ticker", "signal_name", f"{signal.name}", "specific_risk", "in_universe"])
             .rename({f"{signal.name}": "signal_value"})
         )
         print(f"\nyear data after computing signal:\n{year_data}")

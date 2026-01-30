@@ -1,30 +1,30 @@
-from pipelines.ingestion_flows.barra_assets_flow import barra_assets_daily_flow
-from pipelines.ingestion_flows.barra_covariances_flow import (
+from pipelines.ingestion.barra_assets_flow import barra_assets_daily_flow
+from pipelines.ingestion.barra_covariances_flow import (
     barra_covariances_daily_flow,
     barra_covariances_history_flow,
 )
-from pipelines.ingestion_flows.barra_exposures_flow import (
+from pipelines.ingestion.barra_exposures_flow import (
     barra_exposures_daily_flow,
     barra_exposures_history_flow,
 )
-from pipelines.ingestion_flows.barra_cusips_flow import barra_cusips_daily_flow
-from pipelines.ingestion_flows.barra_tickers_flow import barra_tickers_daily_flow
-from pipelines.ingestion_flows.barra_returns_flow import barra_returns_daily_flow, barra_returns_history_flow
-from pipelines.ingestion_flows.barra_risk_flow import barra_risk_daily_flow, barra_risk_history_flow
-from pipelines.ingestion_flows.ftse_russell_flow import ftse_russell_backfill_flow
-from pipelines.ingestion_flows.barra_specific_returns import (
+from pipelines.ingestion.barra_cusips_flow import barra_cusips_daily_flow
+from pipelines.ingestion.barra_tickers_flow import barra_tickers_daily_flow
+from pipelines.ingestion.barra_returns_flow import barra_returns_daily_flow, barra_returns_history_flow
+from pipelines.ingestion.barra_risk_flow import barra_risk_daily_flow, barra_risk_history_flow
+from pipelines.ingestion.ftse_russell_flow import ftse_russell_backfill_flow
+from pipelines.ingestion.barra_specific_returns import (
     barra_specific_returns_daily_flow,
     barra_specific_returns_history_flow,
 )
-from pipelines.ingestion_flows.barra_volume_flow import barra_volume_history_flow, barra_volume_daily_flow
-from pipelines.ingestion_flows.crsp_daily_flow import crsp_daily_backfill_flow
-from pipelines.ingestion_flows.crsp_monthly_flow import crsp_monthly_backfill_flow
-from pipelines.ingestion_flows.crsp_events_flow import crsp_events_backfill_flow
-from pipelines.ingestion_flows.crsp_v2_daily_flow import crsp_v2_daily_backfill_flow
-from pipelines.ingestion_flows.crsp_v2_monthly_flow import crsp_v2_monthly_backfill_flow
-from pipelines.ingestion_flows.barra_factors_flow import barra_factors_daily_flow
+from pipelines.ingestion.barra_volume_flow import barra_volume_history_flow, barra_volume_daily_flow
+from pipelines.ingestion.crsp_daily_flow import crsp_daily_backfill_flow
+from pipelines.ingestion.crsp_monthly_flow import crsp_monthly_backfill_flow
+from pipelines.ingestion.crsp_events_flow import crsp_events_backfill_flow
+from pipelines.ingestion.crsp_v2_daily_flow import crsp_v2_daily_backfill_flow
+from pipelines.ingestion.crsp_v2_monthly_flow import crsp_v2_monthly_backfill_flow
+from pipelines.ingestion.barra_factors_flow import barra_factors_daily_flow
 import datetime as dt
-from pipelines.ingestion_flows.utils.tables import Database
+from pipelines.utils.tables import Database
 
 
 def barra_daily_flow(database: Database) -> None:

@@ -1,9 +1,14 @@
 import datetime as dt
 from pipelines.utils.tables import Database
 import polars as pl
-from pipelines.signal_flows.reversal_flow import get_assets_signal
+from pipelines.signals.reversal_flow import get_assets_signal
 from pipelines.utils.enums import DatabaseName
 from pipelines.components.signals import get_signal
+
+
+def compute_signal(df: pl.DataFrame, signal_name: str) -> pl.DataFrame:
+    """"""
+    
 
 def momentum_backfill_flow(
     start_date: dt.date, 
@@ -29,7 +34,7 @@ def momentum_backfill_flow(
             .with_columns(
                 pl.lit(signal.name).alias("signal_name")
             )
-            .select(["date", "barrid", "ticker", "signal_name", f"{signal.name}"])
+            .select(["date", "barrid", "ticker", "signal_name", f"{signal.name}", "specific_risk", "in_universe"])
             .rename({f"{signal.name}": "signal_value"})
         )
         signals_df_year = year_data.filter(

@@ -1,0 +1,23 @@
+sf_datapipelines_quant_root/
+|
+|--pipelines/
+|  |-- database.py  # Table schemas and upserting into database logic
+|  |--ingestion/  # raw data loading pipelines
+|  |
+|  |-- signals/
+|  |    |-- __init__.py 
+|  |    |-- base.py   # BaseSignal class 
+|  |    |-- momentum.py
+|  |    |-- reversal.py
+|  |
+|  |-- portfolio/
+|  |    |-- scoring.py   # z-scoring logic
+|  |    |-- alphas.py    # compute and combining alphas logic
+|  |     
+|  |-- weights/   # holds optimization logic for getting weights
+|  |
+|  |-- utils/
+|  |-- components/
+|
+|
+|-- scripts
