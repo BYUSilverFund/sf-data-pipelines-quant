@@ -333,8 +333,27 @@ class Database:
             schema={
                 "date": pl.Date,
                 "barrid": pl.String,
+                "ticker": pl.String,
                 "signal_name": pl.String,
                 "signal_value": pl.Float64,
+                "specific_risk": pl.Float64,
+                "in_universe": pl.Boolean,
+            },
+            ids=["date", "barrid", "signal_name"],
+        )
+
+    @property
+    def scores_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="scores",
+            schema={
+                "date": pl.Date,
+                "barrid": pl.String,
+                "ticker": pl.String,
+                "signal_name": pl.String,
+                "signal_score": pl.Float64,
+                "specific_risk": pl.Float64
             },
             ids=["date", "barrid", "signal_name"],
         )
@@ -352,6 +371,22 @@ class Database:
             },
             ids=["date", "barrid", "signal"],
         )
+
+    @property
+    def alphas_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="alphas",
+            schema={
+                "date": pl.Date,
+                "barrid": pl.String,
+                "ticker": pl.String,
+                "signal_name": pl.String,
+                "alpha_value": pl.Float64,
+            },
+            ids=["date", "barrid", "signal_name"],
+        )
+
 
     @property
     def composite_alphas_table(self) -> Table:
