@@ -244,7 +244,7 @@ def ftse(pipeline_type, database, start, end):
     "--signal",
     "signal_to_run",
     default="all",
-    help="Signal name or all"
+    help="Signal name (e.g., 'momentum') or all"
 )
 @click.option(
     "--database",
@@ -282,13 +282,27 @@ def signals(pipeline_type, signal_to_run, database, start, end):
 
                 if signal_to_run == "all":
                     targets = list(available_signals.values())
+                else:
+                    if signal_to_run not in available_signals:
+                        raise ValueError(f"Signal '{signal_to_run}' not found. Available signals: {list(available_signals.keys())}")
+                    targets = [available_signals[signal_to_run]]
 
                 for signal_inst in targets:
                     click.echo(f"\nStarting backfill for signal: {signal_inst.name}...\n")
-                    run_single_backfill(signal_inst, start, end, database_instance)
+
+                    try:
+                        run_single_backfill(
+                            signal_inst, 
+                            start, 
+                            end, 
+                            database_instance
+                        )
+                        click.echo(f"Completed backfill for signal: {signal_inst.name}.\n")
+                    except Exception as e:
+                        click.echo(f"Error processing signal '{signal_inst.name}': {e}")
 
 
-
+# python pipelines signals backfill --database production
 
 if __name__ == "__main__":
     cli()

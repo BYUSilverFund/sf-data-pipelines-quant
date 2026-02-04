@@ -29,6 +29,7 @@ def load_scores_data(
         .collect()
     )
 
+
 def compute_alpha(df: pl.DataFrame, ic: pl.Float64) -> pl.DataFrame:
     """"""
     return (

@@ -35,6 +35,18 @@ def load_signals_data(
         .collect()
     )
 
+def compute_score(df: pl.DataFrame) -> pl.DataFrame:
+    return (
+        df
+        .with_columns(
+            pl.col("signal_value")
+            .sub(pl.col("signal_value").mean())
+            .truediv(pl.col("signal_value").std())
+            .over(["date", "signal_name"])
+            .alias("signal_score")  
+        )
+    )
+
 
 def backfill_scores_flow(
     start_date: dt.date, 
@@ -52,16 +64,7 @@ def backfill_scores_flow(
         print(f"\nSignals data for {year}:\n{yearly_signals}")
 
         # score the signals over date and signal_name
-        scored_signals = (
-            yearly_signals
-            .with_columns(
-                pl.col("signal_value")
-                .sub(pl.col("signal_value").mean())
-                .truediv(pl.col("signal_value").std())
-                .over(["date", "signal_name"])
-                .alias("signal_score")  
-            )
-        )
+        scored_signals = compute_score(yearly_signals)
         print(f"\nScored signals for {year}:\n{scored_signals}")
 
         # upsert into database
@@ -69,12 +72,12 @@ def backfill_scores_flow(
         database.scores_table.upsert(year, rows=scored_signals)
 
 
-if __name__ == "__main__":
-    database_name = DatabaseName("production")
-    database_instance = Database(database_name)
+# if __name__ == "__main__":
+#     database_name = DatabaseName("production")
+#     database_instance = Database(database_name)
 
-    backfill_scores_flow(
-        start_date=dt.date(2023, 1, 1),
-        end_date=dt.date(2025, 12, 31),
-        database=database_instance
-    )
+#     backfill_scores_flow(
+#         start_date=dt.date(2023, 1, 1),
+#         end_date=dt.date(2025, 12, 31),
+#         database=database_instance
+#     )
