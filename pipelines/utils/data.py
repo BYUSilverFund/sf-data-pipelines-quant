@@ -3,7 +3,7 @@ import polars as pl
 import numpy as np
 import sf_quant.data as sfd
 from config import Config
-from components.models import Assets, Betas, Prices, Weights
+from components.types import AssetsDf, PricesDf, WeightsDf, BetasDf, Assets, Prices, Weights, Betas
 import datetime as dt
 
 _config = None
@@ -25,7 +25,7 @@ def get_universe() -> list[str]:
     )
 
 
-def get_prices(tickers: list[str]) -> dy.DataFrame[Prices]:
+def get_prices(tickers: list[str]) -> PricesDf:
     prices = (
         sfd.load_assets_by_date(
             date_=_config.data_date, columns=["ticker", "price"], in_universe=True
@@ -37,7 +37,7 @@ def get_prices(tickers: list[str]) -> dy.DataFrame[Prices]:
     return Prices.validate(prices)
 
 
-def get_assets(tickers: list[str]) -> dy.DataFrame[Assets]:
+def get_assets(tickers: list[str]) -> AssetsDf:
     lookback_days = max([signal.lookback_days for signal in _config.signals])
     start_date = _config.data_date - dt.timedelta(days=lookback_days)
     end_date = _config.data_date
@@ -63,7 +63,7 @@ def get_assets(tickers: list[str]) -> dy.DataFrame[Assets]:
     return Assets.validate(asset_data)
 
 
-def get_betas(tickers: list[str]) -> dy.DataFrame[Betas]:
+def get_betas(tickers: list[str]) -> BetasDf:
     betas = (
         sfd.load_assets_by_date(
             date_=_config.data_date,
@@ -85,8 +85,8 @@ def get_ticker_barrid_mapping() -> pl.DataFrame:
     return mapping
 
 
-def get_benchmark_weights() -> dy.DataFrame[Weights]:
-    return (
+def get_benchmark_weights() -> WeightsDf:
+    weights = (
         sfd.load_assets(
             start=_config.data_date,
             end=_config.data_date,
@@ -102,6 +102,8 @@ def get_benchmark_weights() -> dy.DataFrame[Weights]:
         )
         .sort("ticker")
     )
+
+    return Weights.validate(weights)
 
 
 def get_covariance_matrix(tickers: list[str]) -> np.ndarray:

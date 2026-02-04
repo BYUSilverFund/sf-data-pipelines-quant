@@ -12,6 +12,16 @@ from components.models import (
     Dollars,
     PortfolioMetrics,
 )
+from components.types import (
+    AssetsDf, 
+    PricesDf, 
+    WeightsDf, 
+    BetasDf, 
+    AlphasDf, 
+    DollarsDf, 
+    SharesDf, 
+    OrdersDf
+)
 import sf_quant.optimizer as sfo
 import numpy as np
 
@@ -23,7 +33,7 @@ def set_config(config: Config) -> None:
     _config = config
 
 
-def get_tradable_universe(prices: dy.DataFrame[Prices]) -> list[str]:
+def get_tradable_universe(prices: PricesDf) -> list[str]:
     return (
         prices.filter(
             pl.col("price").ge(5),
@@ -34,7 +44,7 @@ def get_tradable_universe(prices: dy.DataFrame[Prices]) -> list[str]:
     )
 
 
-def get_alphas(assets: dy.DataFrame[Assets]) -> dy.DataFrame[Alphas]:
+def get_alphas(assets: AssetsDf) -> AlphasDf:
     signals = _config.signals
     signal_combinator = _config.signal_combinator
     ic = _config.ic
@@ -75,10 +85,10 @@ def get_alphas(assets: dy.DataFrame[Assets]) -> dy.DataFrame[Alphas]:
 
 def get_optimal_weights(
     tickers: list[str],
-    alphas: dy.DataFrame[Alphas],
-    betas: dy.DataFrame[Betas],
+    alphas: AlphasDf,
+    betas: BetasDf,
     covariance_matrix: np.ndarray,
-) -> dy.DataFrame[Weights]:
+) -> WeightsDf:
     decimal_places = _config.decimal_places
 
     tickers = sorted(tickers)
@@ -108,8 +118,8 @@ def get_optimal_weights(
 
 
 def get_optimal_shares(
-    weights: dy.DataFrame[Weights], prices: dy.DataFrame[Prices], account_value: float
-) -> dy.DataFrame[Shares]:
+    weights: WeightsDf, prices: PricesDf, account_value: float
+) -> SharesDf:
     optimal_shares = (
         weights.join(prices, on="ticker", how="left")
         .with_columns(pl.lit(account_value).mul(pl.col("weight")).alias("dollars"))
@@ -126,10 +136,10 @@ def get_optimal_shares(
 
 
 def get_order_deltas(
-    prices: dy.DataFrame[Prices],
-    current_shares: dy.DataFrame[Shares],
-    optimal_shares: dy.DataFrame[Shares],
-) -> dy.DataFrame[Orders]:
+    prices: PricesDf,
+    current_shares: SharesDf,
+    optimal_shares: SharesDf,
+) -> OrdersDf:
     # Prep shares dataframes for join
     current_shares = current_shares.rename({"shares": "current_shares"})
     optimal_shares = optimal_shares.rename({"shares": "optimal_shares"})
@@ -177,8 +187,8 @@ def compute_risk(weights: np.ndarray, covariance_matrix: np.ndarray) -> float:
 
 
 def get_dollars(
-    shares: dy.DataFrame[Shares], prices: dy.DataFrame[Prices]
-) -> dy.DataFrame[Dollars]:
+    shares: SharesDf, prices: PricesDf
+) -> DollarsDf:
     dollars = (
         shares.join(prices, on="ticker", how="left")
         .with_columns(pl.col("shares").mul("price").alias("dollars"))
@@ -189,8 +199,8 @@ def get_dollars(
 
 
 def get_weights_from_dollars(
-    dollars: dy.DataFrame[Dollars], account_value: float
-) -> dy.DataFrame[Weights]:
+    dollars: DollarsDf, account_value: float
+) -> WeightsDf:
     weights = dollars.with_columns(
         (pl.col("dollars") / pl.lit(account_value)).alias("weight")
     ).sort("ticker")
@@ -199,7 +209,7 @@ def get_weights_from_dollars(
 
 
 def decompose_weights(
-    benchmark: dy.DataFrame[Weights], weights: dy.DataFrame[Weights]
+    benchmark: WeightsDf, weights: WeightsDf
 ) -> tuple[np.ndarray]:
     decomposed_weights = (
         benchmark.select("ticker", pl.col("weight").alias("weight_bmk"))
