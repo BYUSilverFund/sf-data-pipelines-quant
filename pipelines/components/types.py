@@ -11,3 +11,6 @@ WeightsDf: TypeAlias = dy.DataFrame[Weights]
 AlphasDf: TypeAlias = dy.DataFrame[Alphas]
 BetasDf: TypeAlias = dy.DataFrame[Betas]
 OrdersDf: TypeAlias = dy.DataFrame[Orders]
+
+
+# TODO: Add from dataframely import validate

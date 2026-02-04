@@ -134,7 +134,6 @@ def get_optimal_shares(
 
     return Shares.validate(optimal_shares)
 
-
 def get_order_deltas(
     prices: PricesDf,
     current_shares: SharesDf,
