@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from components.models import AssetsDF
 import polars as pl
 
 class BaseSignal(ABC):
@@ -12,7 +13,7 @@ class BaseSignal(ABC):
 
     @property
     @abstractmethod
-    def compute(self, df: pl.DataFrame) -> pl.DataFrame: 
+    def compute(self, df: AssetsDF) -> pl.DataFrame: 
         """Must return a polars DataFrame with the computed signal column added."""
         pass
 
