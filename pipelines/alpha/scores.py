@@ -35,17 +35,27 @@ def load_signals_data(
         .collect()
     )
 
-def compute_score(df: pl.DataFrame) -> pl.DataFrame:
-    return (
-        df
-        .with_columns(
-            pl.col("signal_value")
-            .sub(pl.col("signal_value").mean())
-            .truediv(pl.col("signal_value").std())
-            .over(["date", "signal_name"])
-            .alias("signal_score")  
-        )
-    )
+# def compute_score(df: pl.DataFrame) -> pl.DataFrame:
+#     return (
+#         df
+#         .with_columns(
+#             pl.col("signal_value")
+#             .sub(pl.col("signal_value").mean())
+#             .truediv(pl.col("signal_value").std())
+#             .over(["date", "signal_name"])
+#             .alias("signal_score")  
+#         )
+#     )
+
+
+def compute_scores(df: pl.DataFrame, signals: list) -> pl.DataFrame:
+    """"""
+    return df.with_columns([
+        ((pl.col(s.name) - pl.col(s.name).mean().over("date")) /
+        pl.col(s.name).std().over("date")).alias(f"{s.name}_score")
+        for s in signals
+    ])
+
 
 
 def backfill_scores_flow(
