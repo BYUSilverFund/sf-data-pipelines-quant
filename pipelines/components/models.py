@@ -78,6 +78,12 @@ class Orders(dy.Schema):
     shares = dy.Float64(nullable=False)
     action = dy.String(nullable=False)
 
+class Signals(dy.Schema):
+    ticker = dy.String(nullable=False)
+    date = dy.Date(nullable=False)
+    signal_name = dy.String(nullable=False)
+    signal_value = dy.Float64(nullable=False)
+
 
 @dataclass
 class PortfolioMetrics:
