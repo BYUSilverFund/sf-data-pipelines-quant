@@ -51,6 +51,11 @@ def load_current_barra_files() -> pl.DataFrame:
                     )
                 )
 
+    if not dfs:
+        raise FileNotFoundError(
+            "No Barra return files found. Check input directory, glob pattern, and working directory."
+        )
+    
     df = pl.concat(dfs)
 
     return df

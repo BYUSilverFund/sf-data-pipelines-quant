@@ -1,5 +1,4 @@
 from pipelines.signals.base import BaseSignal
-from components.types import AssetsDF
 import polars as pl
 
 

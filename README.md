@@ -66,5 +66,5 @@ End date for backfilss
 
 ```bash
 python pipelines barra backfill --database production
-python piplines barra update --database production
+python pipelines barra update --database production
 ```
