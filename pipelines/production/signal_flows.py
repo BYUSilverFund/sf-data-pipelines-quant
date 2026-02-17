@@ -1,8 +1,11 @@
 import polars as pl
-from datetime import date
+from datetime import date, timedelta
+from tqdm import tqdm
 
 from pipelines.signals import discover_signals
 from pipelines.utils.tables import Database
+from pipelines.loaders.assets import load_assets_fn
+from pipelines.utils.enums import DatabaseName
 
 
 def compute_signals_long(assets: pl.DataFrame, signals) -> pl.DataFrame:
@@ -34,6 +37,8 @@ def compute_signals_long(assets: pl.DataFrame, signals) -> pl.DataFrame:
     )
 
     # Replace with dataframely check
+
+    # Signals.validate(long)
     return long.with_columns([
         pl.col("date").cast(pl.Date),
         pl.col("barrid").cast(pl.String),
@@ -50,7 +55,7 @@ def signals_backfill_flow(
     database: Database,
     start_date: date,
     end_date: date,
-    load_assets_fn,  # inject your existing loader
+    load_assets_fn,
 ) -> None:
     """
     Backfill across a range. Saves parquets partitioned by year via signals_table.
@@ -64,15 +69,19 @@ def signals_backfill_flow(
         year_end = min(end_date, date(year, 12, 31))
 
         # Load the raw inputs needed by signals
-        assets = load_assets_fn(year_start, year_end).select([
-            "date", "barrid", "ticker", "specific_risk", "in_universe",
-            # plus any other columns signals require (returns, fundamentals, etc.)
+        assets = load_assets_fn(year_start, year_end, signals=signals).select([
+            "date", "barrid", "ticker", "specific_risk", "in_universe", "predicted_beta", "return", "price"
         ])
 
-        out = compute_signals_long(assets, signals)
+        out = (
+            compute_signals_long(assets, signals)
+            .filter(pl.col("date").is_between(year_start, year_end))
+        ) 
 
         table.create_if_not_exists(year)
-        table.upsert(year, out)
+        table.upsert(year, rows=out)
+
+        print(out)
 
 
 def signals_daily_flow(
@@ -85,10 +94,22 @@ def signals_daily_flow(
     Daily update flow. Just calls backfill over a small window.
     """
     if not dates:
-        return
+        dates = [(date.today() - timedelta(days=i)) for i in range(3)]
     signals_backfill_flow(
         database=database,
         start_date=min(dates),
         end_date=max(dates),
+        load_assets_fn=load_assets_fn,
+    )
+
+
+if __name__ == "__main__":
+
+    database_name = DatabaseName("production")
+    database_instance = Database(database_name)
+    signals_backfill_flow(
+        database=database_instance,
+        start_date=date(2023, 1, 1),
+        end_date=date(2025, 12, 31),
         load_assets_fn=load_assets_fn,
     )

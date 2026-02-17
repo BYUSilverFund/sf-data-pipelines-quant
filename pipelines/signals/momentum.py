@@ -3,6 +3,9 @@ import polars as pl
 
 
 class Momentum(BaseSignal):
+
+    required_cols = {"return", "barrid"}
+
     def __init__(self, window: int = 230, shift: int = 22):
         self.window = window
         self.shift = shift
@@ -14,6 +17,18 @@ class Momentum(BaseSignal):
     @property
     def lookback_days(self) -> int:
         return self.window + 20
+
+    @property
+    def expr(self) -> pl.Expr:
+        return (
+            pl.col("return")
+            .log1p()
+            .rolling_sum(window_size=self.window)
+            .shift(self.shift)
+            .over("barrid")
+            .alias(self.name)
+        )
+
 
     def compute(self, df: pl.DataFrame) -> pl.DataFrame:
         return (

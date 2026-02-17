@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 import polars as pl
 
 class BaseSignal(ABC):
+
+    required_cols: set[str] = set()  
+
     @property
     @abstractmethod
     def name(self) -> str: pass
