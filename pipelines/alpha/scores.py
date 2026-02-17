@@ -39,22 +39,32 @@ def load_signals_data(
 #     return (
 #         df
 #         .with_columns(
-#             pl.col("signal_value")
-#             .sub(pl.col("signal_value").mean())
-#             .truediv(pl.col("signal_value").std())
-#             .over(["date", "signal_name"])
-#             .alias("signal_score")  
+#            (
+#             (pl.col("signal_value") - pl.col("signal_value").mean(),over("date")) /
+#             pl.col("signal_value").std().over("date")
+#            ).alias("signal_score")
 #         )
 #     )
 
-
-def compute_scores(df: pl.DataFrame, signals: list) -> pl.DataFrame:
+def compute_scores(df: pl.DataFrame) -> pl.DataFrame:
     """"""
-    return df.with_columns([
-        ((pl.col(s.name) - pl.col(s.name).mean().over("date")) /
-        pl.col(s.name).std().over("date")).alias(f"{s.name}_score")
-        for s in signals
-    ])
+    return (
+        df.with_columns(
+            pl.col("signal_value")
+            .pipe(lambda x: (x - x.mean().over(["date", "signal_name"])) / 
+                            x.std().over(["date", "signal_name"]))
+            .alias("signal_score")
+        )
+    )
+
+
+# def compute_scores(df: pl.DataFrame, signals: list) -> pl.DataFrame:
+#     """"""
+#     return df.with_columns([
+#         ((pl.col(s.name) - pl.col(s.name).mean().over("date")) /
+#         pl.col(s.name).std().over("date")).alias(f"{s.name}_score")
+#         for s in signals
+#     ])
 
 
 

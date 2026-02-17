@@ -72,15 +72,15 @@ def backfill_alpha_flow(
         database.alphas_table.upsert(year, rows=yearly_alphas)
 
 
-if __name__ == "__main__":
-    database_name = DatabaseName("production")
-    database_instance = Database(database_name)
+# if __name__ == "__main__":
+#     database_name = DatabaseName("production")
+#     database_instance = Database(database_name)
 
-    backfill_alpha_flow(
-        start_date=dt.date(2023, 1, 1),
-        end_date=dt.date(2025, 12, 31),
-        database=database_instance
-    )
+#     backfill_alpha_flow(
+#         start_date=dt.date(2023, 1, 1),
+#         end_date=dt.date(2025, 12, 31),
+#         database=database_instance
+#     )
 
 
     

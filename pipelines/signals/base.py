@@ -16,3 +16,4 @@ class BaseSignal(ABC):
         """Must return a polars DataFrame with the computed signal column added."""
         pass
 
+    # required_columns: list[str] = ["date", "barrid", "ticker", "specific_risk", "in_universe"]
