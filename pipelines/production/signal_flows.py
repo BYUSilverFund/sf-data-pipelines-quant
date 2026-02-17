@@ -2,7 +2,7 @@ import polars as pl
 from datetime import date, timedelta
 from tqdm import tqdm
 
-from pipelines.signals import discover_signals
+from pipelines.signals.discovery import discover_signals
 from pipelines.utils.tables import Database
 from pipelines.loaders.assets import load_assets_fn
 from pipelines.utils.enums import DatabaseName
@@ -87,7 +87,7 @@ def signals_backfill_flow(
 def signals_daily_flow(
     *,
     database: Database,
-    dates: list[date],     # e.g. last 3 market dates
+    dates: list[date],     
     load_assets_fn,
 ) -> None:
     """
@@ -95,6 +95,7 @@ def signals_daily_flow(
     """
     if not dates:
         dates = [(date.today() - timedelta(days=i)) for i in range(3)]
+
     signals_backfill_flow(
         database=database,
         start_date=min(dates),
