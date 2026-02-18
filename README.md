@@ -248,7 +248,7 @@ python pipelines portfolio backfill \
 
 Daily Update Example:
 ```bash
-python pipelines_cli.py portfolio update \
+python pipelines portfolio update \
   --database production \
   --days 3 \
   --ic 0.5 \
