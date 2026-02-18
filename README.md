@@ -1,8 +1,82 @@
-# Silver Fund Data Pipeline Repository
+# Silver Fund Quant Data Pipelines
+
+This repository contains ingestion and production pipelines for the quant platform.  
+All pipelines are executed via a Click-based command line interface (CLI).
 
 ## Infrastructure Overview
 
 ![Infrastructure](graphics/sf-pipelines-infrastructure.png)
+
+
+The system supports:
+
+- **Backfills** — historical processing over a date range
+- **Daily Updates** — incremental updates over recent market days
+
+---
+
+# Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Environment Setup](#environment-setup)
+- [Databases & Environments](#databases--environments)
+- [CLI Usage](#cli-usage)
+- [Pipeline Reference](#pipeline-reference)
+  - [Barra](#1-barra-pipeline-barra)
+  - [CRSP](#2-crsp-pipeline-crsp)
+  - [CRSP v2](#3-crsp-v2-pipeline-crsp_v2)
+  - [FTSE](#4-ftse-pipeline-ftse)
+  - [Signals](#5-signals-pipeline-signals)
+  - [Portfolio (Full Production Flow)](#6-portfolio-pipeline-portfolio)
+- [Operational Notes](#operational-notes)
+- [Common Workflows](#common-workflows)
+- [Command Summary](#command-summary)
+
+---
+
+# Architecture Overview
+
+The system consists of:
+
+### Ingestion Pipelines
+- Barra
+- CRSP
+- CRSP v2
+- FTSE
+
+These pull raw vendor data into year-partitioned parquet tables.
+
+### Production Model Pipelines
+- Signals
+- Portfolio
+
+The **Portfolio pipeline** runs the full modeling stack:
+
+1. Signals
+2. Scores (cross-sectional z-scores)
+3. Signal alphas  
+   `signal_alpha = score * ic * specific_risk`
+4. Combined alpha (via combinator)
+5. Optimal weights (mean-variance optimization)
+
+All intermediate stages are persisted for auditability.
+
+---
+
+# Environment Setup
+
+## 1. Python Environment
+
+Install required packages:
+
+```bash
+pip install polars click python-dotenv
+
+
+
+
+
+
 
 ## Setup
 1. Initialize Python virtual environment
