@@ -304,5 +304,107 @@ def signals(pipeline_type, signal_to_run, database, start, end):
 
 # python pipelines signals backfill --database production
 
+
+@cli.command()
+@click.argument(
+    "pipeline_type", type=click.Choice(PIPELINE_TYPES, case_sensitive=False)
+)
+@click.option(
+    "--database",
+    type=click.Choice(VALID_DATABASES, case_sensitive=False),
+    required=True,
+    help="Target database (research or database).",
+)
+@click.option(
+    "--start",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(dt.date(1995, 7, 31)),
+    show_default=True,
+    help="Start date (YYYY-MM-DD).",
+)
+@click.option(
+    "--end",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(dt.date.today()),
+    show_default=True,
+    help="End date (YYYY-MM-DD).",
+)
+@click.option(
+    "--ic",
+    type=float,
+    default=0.5,
+    show_default=True,
+    help="IC scalar used for alpha = score * ic * specific_risk.",
+)
+@click.option(
+    "--min-price",
+    type=float,
+    default=5.0,
+    show_default=True,
+    help="Minimum price for tradable universe scoring/optimization.",
+)
+@click.option(
+    "--combinator",
+    type=str,
+    default="mean",
+    show_default=True,
+    help="Signal alpha combinator name (e.g., mean, sum, etc.).",
+)
+@click.option(
+    "--days",
+    type=int,
+    default=3,
+    show_default=True,
+    help="For update mode: number of recent market days to run.",
+)
+def portfolio(pipeline_type, database, start, end, ic, min_price, combinator, days):
+    """
+    Runs the full production portfolio pipeline:
+      signals -> scores -> signal_alphas -> combined_alpha -> weights
+    """
+    guard_production_backfill(database, pipeline_type)
+
+    database_name = DatabaseName(database)
+    database_instance = Database(database_name)
+
+    signal_combinator = utils.functions._config.signal_combinator if hasattr(utils.functions, "_config") else None
+    if signal_combinator is None:
+        raise ValueError(
+            "Could not construct signal_combinator. "
+            "Replace this with your get_combinator(combinator) factory."
+        )
+
+    match pipeline_type:
+        case "backfill":
+            start_d = start.date() if hasattr(start, "date") else start
+            end_d = end.date() if hasattr(end, "date") else end
+
+            click.echo(
+                f"Running PORTFOLIO backfill on '{database}' from {start_d} to {end_d} "
+                f"(ic={ic}, min_price={min_price}, combinator={combinator})"
+            )
+
+            portfolio_pipeline_backfill_flow(
+                database=database_instance,
+                start_date=start_d,
+                end_date=end_d,
+                signal_combinator=signal_combinator,
+            )
+
+        case "update":
+            click.echo(
+                f"Running PORTFOLIO daily update on '{database}' "
+                f"for last {days} market days (ic={ic}, min_price={min_price}, combinator={combinator})."
+            )
+
+            update_dates = get_last_market_dates(n_days=days)
+
+            portfolio_pipeline_daily_flow(
+                database=database_instance,
+                dates=update_dates,
+                signal_combinator=signal_combinator,
+            )
+
+
 if __name__ == "__main__":
     cli()
