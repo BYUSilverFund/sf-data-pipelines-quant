@@ -22,7 +22,6 @@ def compute_signal_alphas_long(
     """
     df = scores_long
 
-    # Build an expression mapping signal_name -> ic
     ic_expr = (
         pl.col("signal_name")
         .replace(alpha_config.ic_by_signal, default=alpha_config.default_ic)
@@ -61,3 +60,11 @@ def compute_signal_alphas_long(
     )
 
     return out
+
+
+def compute_alphas(
+    scores: pl.DataFrame,
+    *,
+    ic: float
+):
+    pass

@@ -67,6 +67,11 @@ class Alphas(dy.Schema):
     alpha = dy.Float64(nullable=False)
 
 
+class Scores(dy.Schema):
+    ticker = dy.String(nullable=False)
+    score = dy.Float64(nullable=False)
+
+
 class Betas(dy.Schema):
     ticker = dy.String(nullable=False)
     predicted_beta = dy.Float64(nullable=False)

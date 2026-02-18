@@ -352,10 +352,9 @@ class Database:
                 "barrid": pl.String,
                 "ticker": pl.String,
                 "signal_name": pl.String,
-                "signal_value": pl.String,
+                "signal_value": pl.Float64,
                 "score": pl.Float64,
                 "specific_risk": pl.Float64,
-                "in_universe": pl.Boolean
             },
             ids=["date", "barrid", "signal_name"],
         )

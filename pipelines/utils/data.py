@@ -2,16 +2,16 @@ import dataframely as dy
 import polars as pl
 import numpy as np
 import sf_quant.data as sfd
-from config import Config
-from components.models import Assets, Betas, Prices, Weights
+# from config import Config
+from pipelines.components.models import Assets, Betas, Prices, Weights
 import datetime as dt
 
-_config = None
+# _config = None
 
 
-def set_config(config: Config) -> None:
-    global _config
-    _config = config
+# def set_config(config: Config) -> None:
+#     global _config
+#     _config = config
 
 
 def get_universe() -> list[str]:
@@ -35,6 +35,14 @@ def get_prices(tickers: list[str]) -> dy.DataFrame[Prices]:
     )
 
     return Prices.validate(prices)
+
+
+def get_prices_range(start: dt.date, end: dt.date) -> pl.DataFrame:
+    return (
+        sfd.load_assets(start=start, end=end, columns=["date", "ticker", "price"], in_universe=True)
+        .select(["date", "ticker", "price"])
+        .cast({"date": pl.Date})
+    )
 
 
 def get_assets(tickers: list[str]) -> dy.DataFrame[Assets]:

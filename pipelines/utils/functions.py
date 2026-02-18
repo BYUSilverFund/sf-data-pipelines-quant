@@ -1,8 +1,7 @@
-from components.models import Shares
 import dataframely as dy
 import polars as pl
-from config import Config
-from components.models import (
+# from config import Config
+from pipelines.components.models import (
     Prices,
     Assets,
     Alphas,
@@ -11,16 +10,17 @@ from components.models import (
     Orders,
     Dollars,
     PortfolioMetrics,
+    Shares
 )
 import sf_quant.optimizer as sfo
 import numpy as np
 
-_config = None
+# _config = None
 
 
-def set_config(config: Config) -> None:
-    global _config
-    _config = config
+# def set_config(config: Config) -> None:
+#     global _config
+#     _config = config
 
 
 def get_tradable_universe(prices: dy.DataFrame[Prices]) -> list[str]:
