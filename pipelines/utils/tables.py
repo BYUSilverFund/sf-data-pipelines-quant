@@ -235,6 +235,26 @@ class Database:
         )
 
     @property
+    def barra_volume_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="barra_volume",
+            schema={
+                "date": pl.Date,
+                "barrid": pl.String,
+                "daily_volume": pl.Float64,
+                "average_daily_volume_30": pl.Float64,
+                "average_daily_volume_60": pl.Float64,
+                "average_daily_volume_90": pl.Float64,
+                "bid_ask_spread": pl.Float64,
+                "average_daily_bid_ask_spread_30": pl.Float64,
+                "average_daily_bid_ask_spread_60": pl.Float64,
+                "average_daily_bid_ask_spread_90": pl.Float64,
+            },
+            ids=["date", "barrid"],
+        )
+
+    @property
     def exposures_table(self) -> Table:
         return Table(
             database=self._database_name,
