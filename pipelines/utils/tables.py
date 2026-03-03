@@ -188,6 +188,23 @@ class Database:
         )
 
     @property
+    def barra_returns_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="barra_returns",
+            schema={
+                "barrid": pl.String,
+                "price": pl.Float64,
+                "market_cap": pl.Float64,
+                "price_source": pl.String,
+                "currency": pl.String,
+                "return": pl.Float64,
+                "date": pl.Date,
+            },
+            ids=["date", "barrid"],
+        )
+
+    @property
     def exposures_table(self) -> Table:
         return Table(
             database=self._database_name,
