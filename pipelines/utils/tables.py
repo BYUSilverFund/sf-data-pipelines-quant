@@ -218,6 +218,23 @@ class Database:
         )
 
     @property
+    def barra_risk_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="barra_risk",
+            schema={
+                "barrid": pl.String,
+                "yield": pl.Float64,
+                "total_risk": pl.Float64,
+                "specific_risk": pl.Float64,
+                "historical_beta": pl.Float64,
+                "predicted_beta": pl.Float64,
+                "date": pl.Date,
+            },
+            ids=["date", "barrid"],
+        )
+
+    @property
     def exposures_table(self) -> Table:
         return Table(
             database=self._database_name,
