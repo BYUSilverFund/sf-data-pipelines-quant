@@ -188,6 +188,73 @@ class Database:
         )
 
     @property
+    def barra_returns_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="barra_returns",
+            schema={
+                "barrid": pl.String,
+                "price": pl.Float64,
+                "market_cap": pl.Float64,
+                "price_source": pl.String,
+                "currency": pl.String,
+                "return": pl.Float64,
+                "date": pl.Date,
+            },
+            ids=["date", "barrid"],
+        )
+
+    @property
+    def barra_specific_returns_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="barra_specific_returns",
+            schema={
+                "barrid": pl.String,
+                "specific_return": pl.Float64,
+                "date": pl.Date,
+            },
+            ids=["date", "barrid"],
+        )
+
+    @property
+    def barra_risk_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="barra_risk",
+            schema={
+                "barrid": pl.String,
+                "yield": pl.Float64,
+                "total_risk": pl.Float64,
+                "specific_risk": pl.Float64,
+                "historical_beta": pl.Float64,
+                "predicted_beta": pl.Float64,
+                "date": pl.Date,
+            },
+            ids=["date", "barrid"],
+        )
+
+    @property
+    def barra_volume_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="barra_volume",
+            schema={
+                "date": pl.Date,
+                "barrid": pl.String,
+                "daily_volume": pl.Float64,
+                "average_daily_volume_30": pl.Float64,
+                "average_daily_volume_60": pl.Float64,
+                "average_daily_volume_90": pl.Float64,
+                "bid_ask_spread": pl.Float64,
+                "average_daily_bid_ask_spread_30": pl.Float64,
+                "average_daily_bid_ask_spread_60": pl.Float64,
+                "average_daily_bid_ask_spread_90": pl.Float64,
+            },
+            ids=["date", "barrid"],
+        )
+
+    @property
     def exposures_table(self) -> Table:
         return Table(
             database=self._database_name,
