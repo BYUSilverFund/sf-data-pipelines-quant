@@ -43,6 +43,9 @@ class Table:
         else:
             return pl.scan_parquet(self._file_path(year))
 
+    def overwrite(self, df: pl.DataFrame) -> None:
+        df.write_parquet(f"{self._base_path}/{self._name}/{self._name}.parquet")
+
     def upsert(self, year: int, rows: pl.DataFrame) -> None:
         (
             pl.scan_parquet(self._file_path(year))
@@ -433,3 +436,55 @@ class Database:
             },
             ids=["date", "barrid", "name"],
         )
+
+    @property
+    def asset_ids_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name ="asset_ids",
+            schema={
+                "start_date": pl.Date,
+                "end_date": pl.Date,
+                "rootid": pl.String,
+                "barrid": pl.String,
+                "issuerid": pl.String,
+                "instrument": pl.String,
+                "name": pl.String,
+                "iso_country_code": pl.String,
+                "iso_currency_code": pl.String,
+            },
+            ids=['barrid','start_date', 'rootid', 'end_date']
+        )
+
+    @property
+    def barra_ids_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="barra_ids",
+            schema={
+                "barrid": pl.String,
+                "asset_id_type": pl.String,
+                "asset_id": pl.String,
+                "start_date": pl.Date,
+                "end_date": pl.Date,
+            },
+            ids=['barrid','start_date', "asset_id_type", "end_date"]
+        )
+
+    @property
+    def fama_french_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="fama_french",
+            schema={
+                "date": pl.Date,
+                "mkt_rf": pl.Float64,
+                "smb": pl.Float64,
+                "hml": pl.Float64,
+                "rmw": pl.Float64,
+                "cma": pl.Float64,
+                "rf": pl.Float64,
+            },
+            ids=["date"],
+        )
+    
