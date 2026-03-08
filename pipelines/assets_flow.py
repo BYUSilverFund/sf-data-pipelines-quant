@@ -22,8 +22,7 @@ def assets_backfill_flow(start_date: date, end_date: date, database: Database) -
     volume_lazy = database.barra_volume_table.read()
     asset_ids_lazy = database.asset_ids_table.read_id_file()
     barra_ids_lazy = database.barra_ids_table.read_id_file()
-    ftse_russell_lazy = database.ftse_russell_table.read()
-
+    
     # Step 2: Chain all lazy joins on all data
     combined = (
         returns_lazy
@@ -39,11 +38,6 @@ def assets_backfill_flow(start_date: date, end_date: date, database: Database) -
         )
         .join(
             volume_lazy,
-            on=["date", "barrid"],
-            how="left"
-        )
-        .join(
-            ftse_russell_lazy,
             on=["date", "barrid"],
             how="left"
         )
@@ -84,15 +78,39 @@ def assets_backfill_flow(start_date: date, end_date: date, database: Database) -
         strategy="backward"
     )
 
-    # Step 5: Forward fill FTSE Russell columns on lazy frame
+    # Step 5: FTSE Russell merge with rebalance-aware forward fill
+    ftse_russell_lazy = database.ftse_russell_table.read()
+
+    # Join FTSE on cusip
+    combined = combined.join(ftse_russell_lazy, on=["date", "cusip"], how="left")
+
+    # Identify rebalance dates (dates where any asset has Russell membership)
+    russell_rebalance_dates = (
+        combined
+        .filter(pl.col("russell_1000") | pl.col("russell_2000"))
+        .select("date", pl.lit(True).alias("russell_rebalance"))
+        .unique()
+    )
+
+    # On rebalance dates, fill null memberships with False; then forward fill; compute in_universe
     combined = (
         combined
+        .join(russell_rebalance_dates, on="date", how="left")
+        .with_columns(
+            pl.when(pl.col("russell_rebalance")).then(
+                pl.col("russell_1000", "russell_2000").fill_null(False)
+            )
+        )
         .sort(["barrid", "date"])
         .with_columns(
-            pl.col("russell_1000", "russell_2000", "in_universe")
-            .forward_fill()
+            pl.col("russell_1000", "russell_2000")
+            .fill_null(strategy="forward")
             .over("barrid")
         )
+        .with_columns(
+            pl.col("russell_1000").or_(pl.col("russell_2000")).alias("in_universe")
+        )
+        .drop("russell_rebalance")
     )
 
     # Step 6: Collect once on all data

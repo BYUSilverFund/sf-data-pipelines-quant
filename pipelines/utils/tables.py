@@ -483,22 +483,6 @@ class Database:
         )
 
     @property
-    def ftse_russell_table(self) -> Table:
-        return Table(
-            database=self._database_name,
-            name="ftse_russell",
-            schema={
-                "date": pl.Date,
-                "barrid": pl.String,
-                "cusip": pl.String,
-                "russell_1000": pl.Boolean,
-                "russell_2000": pl.Boolean,
-                "in_universe": pl.Boolean,
-            },
-            ids=["date", "barrid"],
-        )
-
-    @property
     def fama_french_table(self) -> Table:
         return Table(
             database=self._database_name,
