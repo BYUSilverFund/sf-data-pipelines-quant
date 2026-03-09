@@ -43,6 +43,9 @@ class Table:
         else:
             return pl.scan_parquet(self._file_path(year))
 
+    def read_id_file(self) -> pl.LazyFrame:
+        return pl.scan_parquet(f"{self._base_path}/{self._name}/{self._name}.parquet")
+    
     def overwrite(self, df: pl.DataFrame) -> None:
         df.write_parquet(f"{self._base_path}/{self._name}/{self._name}.parquet")
 
@@ -64,6 +67,12 @@ class Table:
             .collect()
             .write_parquet(self._file_path(year))
         )
+
+    def delete(self, year: int) -> None:
+        """Delete parquet file for a specific year."""
+        file_path = self._file_path(year)
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
     def update_asof(
         self,
@@ -161,6 +170,8 @@ class Database:
                 "instrument": pl.String,
                 "name": pl.String,
                 "cusip": pl.String,
+                "isin": pl.String,
+                "cisn": pl.String,
                 "ticker": pl.String,
                 "price": pl.Float64,
                 "return": pl.Float64,
