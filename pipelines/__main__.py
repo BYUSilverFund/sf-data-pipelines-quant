@@ -8,7 +8,7 @@ from pipelines.all_pipelines import (
     barra_daily_pipeline,
     fama_french_5_factors_flow,
 )
-from signals_flow import signals_flow
+from pipelines.signals_flow import signals_flow
 from pipelines.utils.enums import DatabaseName
 from pipelines.utils.tables import Database
 
