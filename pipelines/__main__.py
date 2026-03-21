@@ -254,7 +254,7 @@ def fama_french(database):
 @click.option(
     "--start",
     type=click.DateTime(formats=["%Y-%m-%d"]),
-    default=str(dt.date(1995, 7, 31)),
+    default=str(dt.date(1996, 7, 31)),
     show_default=True,
     help="Start date (YYYY-MM-DD).",
 )
@@ -265,7 +265,16 @@ def fama_french(database):
     show_default=True,
     help="End date (YYYY-MM-DD).",
 )
-def signals_flow()
+def signals(pipeline_type, database, start, end):
+    start = start.date() if hasattr(start, "date") else start
+    end = end.date() if hasattr(end, "date") else end
+
+    click.echo(f"Running signals backfill on '{database}' from {start} to {end}...")
+
+    database_name = DatabaseName(database)
+    database_instance = Database(database_name)
+
+    signals_flow(start, end, database_instance)
 
 
 if __name__ == "__main__":
