@@ -62,7 +62,6 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
             .with_columns(signal_config["expr"])
             .with_columns(pl.col(signal_name).alias("signal_value"))
         ).filter(
-                pl.col("price").shift(1).over("barrid").gt(5),
                 pl.col(signal_name).is_not_null(),
                 pl.col("predicted_beta").is_not_null(),
                 pl.col("specific_risk").is_not_null(),
