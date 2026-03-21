@@ -5,7 +5,7 @@
 #SBATCH --nodes=1   # number of nodes
 #SBATCH --mem-per-cpu=4096M   # memory per CPU core
 #SBATCH -J "Backfill"   # job name
-#SBATCH --mail-user=amh1124@byu.edu   # email address
+#SBATCH --mail-user=njpres3@byu.edu   # email address
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
