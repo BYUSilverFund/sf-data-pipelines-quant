@@ -16,6 +16,7 @@ from pipelines.barra_specific_returns import (
     barra_specific_returns_history_flow,
 )
 from pipelines.barra_volume_flow import barra_volume_history_flow, barra_volume_daily_flow
+from pipelines.assets_flow import assets_backfill_flow
 from pipelines.crsp_daily_flow import crsp_daily_backfill_flow
 from pipelines.crsp_monthly_flow import crsp_monthly_backfill_flow
 from pipelines.crsp_events_flow import crsp_events_backfill_flow
@@ -50,6 +51,7 @@ def barra_history_flow(
     barra_specific_returns_history_flow(start_date, end_date, database)
     barra_risk_history_flow(start_date, end_date, database)
     barra_volume_history_flow(start_date, end_date, database)
+    assets_backfill_flow(start_date, end_date, database)
 
     # Covariance Matrix Components
     barra_exposures_history_flow(start_date, end_date, database)
@@ -65,7 +67,7 @@ def ftse_history_flow(
     start_date: dt.date, end_date: dt.date, database: Database, user: str
 ) -> None:
     """Note: requires logging in to WRDS when running."""
-    ftse_russell_backfill_flow(start_date, end_date, database, user)
+    ftse_russell_backfill_flow(start_date, end_date, database)
 
 
 def crsp_history_flow(
@@ -87,6 +89,7 @@ def crsp_v2_history_flow(
 def barra_daily_pipeline(database: Database) -> None:
     barra_daily_flow(database)
     id_mappings_flow(database)
+    assets_backfill_flow(dt.date(1995, 7, 31), dt.date.today(), database)
 
 
 def barra_backfill_pipeline(
@@ -94,6 +97,7 @@ def barra_backfill_pipeline(
 ) -> None:
     barra_history_flow(start_date, end_date, database)
     id_mappings_flow(database)
+    assets_backfill_flow(start_date, end_date, database)
 
 
 def ftse_backfill_pipeline(
