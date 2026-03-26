@@ -102,6 +102,7 @@ russell_schema = {
     "cusip": pl.String,
     "russell2000": pl.String,
     "russell1000": pl.String,
+    "cik": pl.String,
 }
 
 crsp_schema = {

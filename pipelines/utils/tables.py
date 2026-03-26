@@ -46,8 +46,23 @@ class Table:
     def read_id_file(self) -> pl.LazyFrame:
         return pl.scan_parquet(f"{self._base_path}/{self._name}/{self._name}.parquet")
     
+    def create_id_file_if_not_exists(self) -> None:
+        file_path = f"{self._base_path}/{self._name}/{self._name}.parquet"
+        if not os.path.exists(file_path):
+            pl.DataFrame(schema=self._schema).write_parquet(file_path)
+
     def overwrite(self, df: pl.DataFrame) -> None:
         df.write_parquet(f"{self._base_path}/{self._name}/{self._name}.parquet")
+
+    def upsert_id_file(self, rows: pl.DataFrame) -> None:
+        file_path = f"{self._base_path}/{self._name}/{self._name}.parquet"
+        self.create_id_file_if_not_exists()
+        (
+            pl.scan_parquet(file_path)
+            .update(rows.lazy(), on=self._ids, how="full")
+            .collect()
+            .write_parquet(file_path)
+        )
 
     def upsert(self, year: int, rows: pl.DataFrame) -> None:
         (
@@ -441,6 +456,26 @@ class Database:
         )
 
     @property
+    def ten_k_filings_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="ten_k_filings",
+            schema={
+                "year": pl.Int64,
+                "cusip": pl.String,
+                "cik": pl.String,
+                "form": pl.String,
+                "filing_date": pl.Date,
+                "acceptance_datetime": pl.String,
+                "report_date": pl.Date,
+                "accession_number": pl.String,
+                "filing_url": pl.String,
+                "item_1a": pl.String,
+            },
+            ids=["cusip", "cik"],
+        )
+
+    @property
     def fama_french_table(self) -> Table:
         return Table(
             database=self._database_name,
@@ -467,6 +502,7 @@ class Database:
                 "cusip": pl.String,
                 "russell_2000": pl.Boolean,
                 "russell_1000": pl.Boolean,
+                "cik": pl.String,
             },
             ids=["date", "cusip"],
         )
