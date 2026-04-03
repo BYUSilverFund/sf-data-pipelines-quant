@@ -190,8 +190,9 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
             .join(ten_k_alpha_df, on=["date", "barrid"], how="left")
             .sort(["barrid", "date"])
             .with_columns(
-                # Shift by one trading day and hold the event alpha constant for
-                # the same annual holding window used in the legacy research code.
+                # Shift by one trading day and then simply forward-fill that same
+                # event alpha for 245 trading days; we do not recompute the alpha
+                # daily once the filing-date signal has been formed.
                 pl.col("alpha")
                 .shift(1)
                 .forward_fill(limit=TEN_K_HOLDING_DAYS)

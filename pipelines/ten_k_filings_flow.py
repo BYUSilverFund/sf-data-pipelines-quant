@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
+from glob import glob
 import os
 import time
 
@@ -13,6 +14,17 @@ from pipelines.utils.tables import Database
 MAX_WORKERS = 4
 SLEEP_BETWEEN = 0.2
 TEN_K_RECHECK_TRADING_DAYS = 245
+TEN_K_FILE_COLUMNS = [
+    "year",
+    "cusip",
+    "cik",
+    "form",
+    "filing_date",
+    "acceptance_datetime",
+    "accession_number",
+    "filing_url",
+    "item_1a",
+]
 
 
 def _normalize_cik(cik: str | None) -> str | None:
@@ -127,7 +139,8 @@ def load_ftse_cik_df(
 
 def load_existing_ten_k_filings_df(database: Database, year: int) -> pl.DataFrame:
     try:
-        return database.ten_k_filings_table.read(year).collect()
+        df = database.ten_k_filings_table.read(year).collect()
+        return _normalize_existing_ten_k_df(database, df, year=year)
     except Exception:
         # Backfills are incremental by year, so missing parquet files should
         # behave like an empty historical result set rather than raising.
@@ -139,7 +152,6 @@ def load_existing_ten_k_filings_df(database: Database, year: int) -> pl.DataFram
                 "form": pl.String,
                 "filing_date": pl.Date,
                 "acceptance_datetime": pl.String,
-                "report_date": pl.Date,
                 "accession_number": pl.String,
                 "filing_url": pl.String,
                 "item_1a": pl.String,
@@ -148,6 +160,8 @@ def load_existing_ten_k_filings_df(database: Database, year: int) -> pl.DataFram
 
 
 def load_all_existing_ten_k_filings_df(database: Database) -> pl.DataFrame:
+    _normalize_all_existing_ten_k_files(database)
+
     try:
         return database.ten_k_filings_table.read().collect()
     except Exception:
@@ -159,12 +173,48 @@ def load_all_existing_ten_k_filings_df(database: Database) -> pl.DataFrame:
                 "form": pl.String,
                 "filing_date": pl.Date,
                 "acceptance_datetime": pl.String,
-                "report_date": pl.Date,
                 "accession_number": pl.String,
                 "filing_url": pl.String,
                 "item_1a": pl.String,
             }
         )
+
+
+def _normalize_existing_ten_k_df(
+    database: Database, df: pl.DataFrame, year: int | None = None
+) -> pl.DataFrame:
+    columns = set(df.columns)
+
+    # Older yearly parquet files may still carry the legacy report_date field.
+    # Normalize those files in place so the checked-in schema only depends on
+    # filing_date going forward.
+    if "report_date" in columns:
+        df = df.drop("report_date")
+
+    missing_columns = [col for col in TEN_K_FILE_COLUMNS if col not in df.columns]
+    if missing_columns:
+        df = df.with_columns([pl.lit(None).alias(col) for col in missing_columns])
+
+    df = df.select(TEN_K_FILE_COLUMNS)
+
+    if year is not None and "report_date" in columns:
+        df.write_parquet(database.ten_k_filings_table._file_path(year))
+
+    return df
+
+
+def _normalize_all_existing_ten_k_files(database: Database) -> None:
+    table = database.ten_k_filings_table
+    pattern = os.path.join(table._base_path, table._name, f"{table._name}_*.parquet")
+
+    for file_path in glob(pattern):
+        df = pl.read_parquet(file_path)
+        if "report_date" not in df.columns:
+            continue
+
+        year = int(os.path.splitext(os.path.basename(file_path))[0].rsplit("_", 1)[1])
+        normalized_df = _normalize_existing_ten_k_df(database, df, year=None)
+        normalized_df.write_parquet(table._file_path(year))
 
 
 def _trading_day_cutoff(current_date: date, lookback_days: int) -> date:
@@ -222,7 +272,6 @@ def _fetch_latest_ten_k_filing(
         "form": None,
         "filing_date": None,
         "acceptance_datetime": None,
-        "report_date": None,
         "accession_number": None,
         "filing_url": None,
         "item_1a": None,
@@ -253,7 +302,6 @@ def _fetch_latest_ten_k_filing(
                 "acceptance_datetime": _normalize_datetime(
                     _safe_attr(filing, "acceptance_datetime")
                 ),
-                "report_date": _normalize_date(_safe_attr(filing, "report_date")),
                 "accession_number": _safe_attr(
                     filing,
                     "accession_number",
@@ -389,6 +437,7 @@ def ten_k_filings_flow(
         )
 
     set_identity(identity)
+    _normalize_all_existing_ten_k_files(database)
 
     if today_mode:
         ten_k_filings_today_flow(end_date, database)

@@ -470,7 +470,6 @@ class Database:
                 "form": pl.String,
                 "filing_date": pl.Date,
                 "acceptance_datetime": pl.String,
-                "report_date": pl.Date,
                 "accession_number": pl.String,
                 "filing_url": pl.String,
                 "item_1a": pl.String,
