@@ -30,6 +30,8 @@ def load_ftse_russell_df(start_date: date, end_date: date, user: str) -> pl.Data
                 WHERE names.cusip IS NOT NULL
                     AND company.cik IS NOT NULL
             ) b
+                -- FTSE and Compustat both store full CUSIPs, but the stable issuer
+                -- match for downstream 10-K work is the first 8 characters.
                 ON LEFT(a.cusip, 8) = LEFT(b.cusip, 8)
             WHERE a.date BETWEEN '{start_date}' AND '{end_date}'
             ORDER BY a.cusip, a.date
@@ -42,6 +44,8 @@ def clean(df: pl.DataFrame) -> pl.DataFrame:
     """Clean and standardize FTSE Russell dataframe."""
     return df.rename(russell_columns, strict=False).with_columns(
         pl.col("russell_2000", "russell_1000").eq("Y"),
+        # Keep CIK as a zero-padded string so EDGAR lookups do not depend on
+        # integer formatting later in the 10-K flow.
         pl.col("cik").cast(pl.String).str.strip_chars(),
     )
 

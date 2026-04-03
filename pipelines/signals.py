@@ -55,10 +55,13 @@ def ic_alphatizer(df: pl.DataFrame, ic: float = 0.05) -> pl.DataFrame:
 
 
 def ten_k_alphatizer(df: pl.DataFrame, ic: float = 0.05) -> pl.DataFrame:
-    """Match the legacy 10-K alpha construction."""
+    """Match the legacy 10-K alpha construction on the filing event date."""
     return df.with_columns(
         pl.col("score")
         .mul(ic)
+        # The 10-K signal is formed on the filing date, scaled once by that
+        # day's specific risk, and then forward-filled later in signals_flow.
+        #we multiply by negative 1 because the kl divergence is high is not similar low is similar
         .mul(pl.col("specific_risk"))
         .mul(-1)
         .alias("alpha")
@@ -186,13 +189,18 @@ def build_ten_k_similarity_df(ten_k_df: pl.DataFrame) -> pl.DataFrame:
             pl.col("filing_date").is_not_null(),
         )
         .with_columns(
+            # The downstream asset/FTSE joins are based on 8-character CUSIPs.
             pl.col("cusip").str.slice(0, 8).alias("cusip"),
         )
         .sort(
             ["cik", "year", "filing_date", "cusip"],
             descending=[False, True, True, False],
         )
+        # A company can have multiple rows in a year (for example due to repeat
+        # pulls), but the similarity calculation expects one filing per CIK/year.
         .unique(subset=["cik", "year"], keep="last")
+        # The legacy notebook logic iterated by CIK ascending and year
+        # descending, so we preserve that order for parity.
         .sort(["cik", "year"], descending=[False, True])
     )
 
@@ -225,6 +233,8 @@ def build_ten_k_similarity_df(ten_k_df: pl.DataFrame) -> pl.DataFrame:
                 continue
 
             try:
+                # Match the legacy construction exactly: current filing text is
+                # P and prior-year filing text is Q in D_KL(P || Q).
                 counts = vectorizer.fit_transform([doc_1, doc_2]).toarray()
                 counts = counts + 1e-10
                 p = counts[0] / counts[0].sum()

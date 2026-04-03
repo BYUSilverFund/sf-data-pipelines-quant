@@ -307,22 +307,37 @@ def signals(pipeline_type, database, start, end):
     show_default=True,
     help="End date (YYYY-MM-DD).",
 )
-def ten_k(pipeline_type, database, start, end):
+@click.option(
+    "--today",
+    "today_mode",
+    is_flag=True,
+    help="Use the latest FTSE Russell snapshot on or before today and only recheck companies whose last saved 10-K is at least 245 trading days old.",
+)
+def ten_k(pipeline_type, database, start, end, today_mode):
     load_dotenv(override=True)
 
     match pipeline_type:
         case "backfill":
-            start = start.date() if hasattr(start, "date") else start
-            end = end.date() if hasattr(end, "date") else end
+            if today_mode:
+                today = dt.date.today()
+                click.echo(
+                    f"Running 10-K daily update on '{database}' using the latest FTSE Russell snapshot on or before {today}."
+                )
+            else:
+                start = start.date() if hasattr(start, "date") else start
+                end = end.date() if hasattr(end, "date") else end
 
-            click.echo(
-                f"Running 10-K backfill on '{database}' from {start} to {end}."
-            )
+                click.echo(
+                    f"Running 10-K backfill on '{database}' from {start} to {end}."
+                )
 
             database_name = DatabaseName(database)
             database_instance = Database(database_name)
 
-            ten_k_filings_flow(start, end, database_instance)
+            if today_mode:
+                ten_k_filings_flow(dt.date.today(), dt.date.today(), database_instance, today_mode=True)
+            else:
+                ten_k_filings_flow(start, end, database_instance)
 
 
 if __name__ == "__main__":

@@ -461,6 +461,9 @@ class Database:
             database=self._database_name,
             name="ten_k_filings",
             schema={
+                # 10-K filings are stored in yearly parquet files and keyed by
+                # CUSIP/CIK so annual refreshes can upsert the latest filing per
+                # company without rewriting the full history.
                 "year": pl.Int64,
                 "cusip": pl.String,
                 "cik": pl.String,
@@ -498,6 +501,8 @@ class Database:
             database=self._database_name,
             name="ftse_russell",
             schema={
+                # FTSE Russell is the benchmark membership source used for both
+                # the research universe and the CUSIP -> CIK bridge into EDGAR.
                 "date": pl.Date,
                 "cusip": pl.String,
                 "russell_2000": pl.Boolean,

@@ -1,5 +1,6 @@
 from datetime import date
 import polars as pl
+from tqdm import tqdm
 from pipelines.utils.tables import Database
 from pipelines.signals import SIGNALS, build_ten_k_similarity_df
 
@@ -65,11 +66,6 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
             .collect()
             .unique(subset=["cusip", "cik", "year", "filing_date"], keep="last")
         )
-        print(f"10-K input rows: {ten_k_df.height}")
-        print(
-            "10-K rows with non-null Item 1A: "
-            f"{ten_k_df.filter(pl.col('item_1a').is_not_null()).height}"
-        )
     except Exception as exc:
         raise RuntimeError(
             "Failed to load ten_k_filings parquet files. "
@@ -77,11 +73,6 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
         ) from exc
 
     ten_k_similarity_df = build_ten_k_similarity_df(ten_k_df)
-    print(f"10-K similarity rows: {ten_k_similarity_df.height}")
-    print(
-        "10-K similarity non-null rows: "
-        f"{ten_k_similarity_df.filter(pl.col('ten_k_similarity_value').is_not_null()).height}"
-    )
 
     if ten_k_similarity_df.is_empty():
         assets_df = assets_df.with_columns(
@@ -103,6 +94,8 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
                 strategy="backward",
             )
             .with_columns(
+                # A filed 10-K should stay tradable for a fixed holding window,
+                # but the score itself is still computed only on the event date.
                 pl.when(
                     pl.col("ten_k_similarity_filing_date").is_not_null()
                     & (
@@ -117,7 +110,7 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
             .sort(["barrid", "date"])
         )
 
-    ten_k_signal_df = (
+    ten_k_panel_df = (
         assets_df
         .with_columns(SIGNALS["ten_k_similarity"]["expr"])
         .filter(pl.col("ten_k_similarity").is_not_null())
@@ -125,11 +118,23 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
         .unique(subset=["date", "barrid"], keep="last")
         .sort(["barrid", "date"])
     )
-    print(f"10-K signal rows after join/filter: {ten_k_signal_df.height}")
+
+    ten_k_event_signal_df = (
+        ten_k_panel_df
+        # Legacy parity: score the KL signal only across names that actually
+        # filed on that date, not across the whole 245-day active panel.
+        .filter(pl.col("date").eq(pl.col("ten_k_similarity_filing_date")))
+        .filter(
+            pl.col("ten_k_similarity").is_not_null(),
+            pl.col("specific_risk").is_not_null(),
+        )
+        .unique(subset=["date", "barrid"], keep="last")
+        .sort(["barrid", "date"])
+    )
 
     ten_k_score_df = (
-        SIGNALS["ten_k_similarity"]["scorer"](ten_k_signal_df)
-        if not ten_k_signal_df.is_empty()
+        SIGNALS["ten_k_similarity"]["scorer"](ten_k_event_signal_df)
+        if not ten_k_event_signal_df.is_empty()
         else pl.DataFrame(
             schema={
                 "date": pl.Date,
@@ -143,27 +148,20 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
             }
         )
     )
-    if ten_k_score_df.is_empty():
-        print("10-K score rows: 0")
-    else:
-        print(f"10-K score rows: {ten_k_score_df.height}")
-        print(
-            "10-K non-null score rows: "
-            f"{ten_k_score_df.filter(pl.col('score').is_not_null()).height}"
-        )
 
     ten_k_event_df = (
         ten_k_score_df
-        .filter(pl.col("date").eq(pl.col("ten_k_similarity_filing_date")))
         .filter(
             pl.col("ten_k_similarity").is_not_null(),
             pl.col("specific_risk").is_not_null(),
             pl.col("score").is_not_null(),
+            # A NaN score usually means the event-date cross section was too
+            # thin to form a meaningful z-score, so treat it as no event alpha.
+            pl.col("score").is_nan().not_(),
         )
         .unique(subset=["date", "barrid"], keep="last")
         .sort(["barrid", "date"])
     )
-    print(f"10-K event rows: {ten_k_event_df.height}")
 
     if ten_k_event_df.is_empty():
         ten_k_alpha_df = pl.DataFrame(
@@ -177,6 +175,10 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
         ten_k_alpha_df = (
             SIGNALS["ten_k_similarity"]["alphatizer"](ten_k_event_df)
             .select("barrid", "date", "alpha")
+            .filter(
+                pl.col("alpha").is_not_null(),
+                pl.col("alpha").is_nan().not_(),
+            )
             .unique(subset=["date", "barrid"], keep="last")
             .sort(["barrid", "date"])
         )
@@ -188,6 +190,8 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
             .join(ten_k_alpha_df, on=["date", "barrid"], how="left")
             .sort(["barrid", "date"])
             .with_columns(
+                # Shift by one trading day and hold the event alpha constant for
+                # the same annual holding window used in the legacy research code.
                 pl.col("alpha")
                 .shift(1)
                 .forward_fill(limit=TEN_K_HOLDING_DAYS)
@@ -197,8 +201,6 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
             .with_columns(pl.col("alpha").fill_null(0.0))
             .unique(subset=["date", "barrid"], keep="last")
         )
-    print(f"10-K daily alpha rows: {ten_k_alpha_df.height}")
-    print("10-K branch completed")
 
     # Lists to accumulate results for each table
     signals_rows = []
@@ -206,11 +208,10 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
     alphas_rows = []
 
     # Compute each signal
-    for signal_name, signal_config in SIGNALS.items():
-        print(f"Processing signal: {signal_name}")
+    for signal_name, signal_config in tqdm(SIGNALS.items(), desc="Signals", total=len(SIGNALS)):
         if signal_name == "ten_k_similarity":
             signal_df = (
-                ten_k_signal_df
+                ten_k_panel_df
                 .select([
                     "date",
                     "barrid",
@@ -250,7 +251,6 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
                     ])
                     .unique(subset=["date", "barrid", "signal_name"], keep="last")
                 )
-            print("Finished signal: ten_k_similarity")
             continue
 
         signal_df = (
@@ -288,20 +288,13 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
             pl.lit(signal_name).alias("signal_name"),
             "alpha"
         ]).unique(subset=["date", "barrid", "signal_name"], keep="last"))
-        print(f"Finished signal: {signal_name}")
 
     # Concatenate all rows for each table
-    print("Starting final concatenation")
     signals_df = pl.concat(signals_rows)
     scores_df = pl.concat(scores_rows)
     alphas_df = pl.concat(alphas_rows)
-    print("Finished final concatenation")
 
-    print("Final signals counts:", signals_df.group_by("signal_name").len().sort("signal_name").to_dicts())
-    print("Final scores counts:", scores_df.group_by("signal_name").len().sort("signal_name").to_dicts())
-    print("Final alphas counts:", alphas_df.group_by("signal_name").len().sort("signal_name").to_dicts())
-
-    if ten_k_signal_df.height > 0:
+    if ten_k_panel_df.height > 0:
         final_signal_names = set(signals_df["signal_name"].unique().to_list())
         if "ten_k_similarity" not in final_signal_names:
             raise RuntimeError(
@@ -309,11 +302,9 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
             )
 
     # Write single file per table (all years)
-    print("Starting overwrite")
     database.signals_table.overwrite(signals_df)
     database.scores_table.overwrite(scores_df)
     database.alpha_table.overwrite(alphas_df)
-    print("Finished overwrite")
 
 
 if __name__ == "__main__":
