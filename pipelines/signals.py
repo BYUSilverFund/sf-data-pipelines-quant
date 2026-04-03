@@ -1,7 +1,7 @@
 import polars as pl
 import numpy as np
 from scipy.special import rel_entr
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer 
 
 # Z-Score functions
 def zscore_scorer(df: pl.DataFrame) -> pl.DataFrame:
@@ -179,7 +179,7 @@ def build_ten_k_similarity_df(ten_k_df: pl.DataFrame) -> pl.DataFrame:
     vectorizer = CountVectorizer(
         lowercase=True,
         token_pattern=r"(?u)\b[a-zA-Z]{2,}\b",
-        stop_words="english",
+        stop_words="english", #stop words gets rid of 'the' 'and' etc
     )
 
     ten_k_df = (

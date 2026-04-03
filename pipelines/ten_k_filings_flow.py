@@ -267,6 +267,7 @@ def _fetch_latest_ten_k_filing(
                     "link",
                 ),
                 "item_1a": _safe_item(filing_obj, "Item 1A") if filing_obj is not None else None,
+                #can add other items if wanted/needed
             }
         )
         if result["year"] is None and result["filing_date"] is not None:
