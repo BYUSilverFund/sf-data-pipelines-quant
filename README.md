@@ -83,3 +83,25 @@ Check for and update filings for securities with suspected filing:
 ```bash
 python -m pipelines ten-k backfill --database development --today
 ```
+
+## Signals Pipeline
+
+The signals pipeline is now split into three CLI entrypoints:
+- `signals`: run all signals
+- `barra-signals`: run only the Barra-style signals
+- `ten-k-signals`: run only the 10-K similarity signal
+
+Run all signals (example):
+```bash
+python -m pipelines signals backfill --database development --start 2024-01-01 --end 2026-03-31
+```
+
+Run only Barra signals (example):
+```bash
+python -m pipelines barra-signals backfill --database development --start 2024-01-01 --end 2026-03-31
+```
+
+Run only the 10-K signal (example):
+```bash
+python -m pipelines ten-k-signals backfill --database development --start 2024-01-01 --end 2026-03-31
+```

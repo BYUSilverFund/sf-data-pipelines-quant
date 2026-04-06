@@ -1,7 +1,4 @@
 import polars as pl
-import numpy as np
-from scipy.special import rel_entr
-from sklearn.feature_extraction.text import CountVectorizer 
 
 # Z-Score functions
 def zscore_scorer(df: pl.DataFrame) -> pl.DataFrame:
@@ -51,20 +48,6 @@ def ic_alphatizer(df: pl.DataFrame, ic: float = 0.05) -> pl.DataFrame:
     """Alpha = score * IC * specific_risk."""
     return df.with_columns(
         pl.col("score").mul(ic).mul(pl.col("specific_risk")).alias("alpha")
-    )
-
-
-def ten_k_alphatizer(df: pl.DataFrame, ic: float = 0.05) -> pl.DataFrame:
-    """Match the legacy 10-K alpha construction on the filing event date."""
-    return df.with_columns(
-        pl.col("score")
-        .mul(ic)
-        # The 10-K signal is formed on the filing date, scaled once by that
-        # day's specific risk, and then forward-filled later in signals_flow.
-        #we multiply by negative 1 because the kl divergence is high is not similar low is similar
-        .mul(pl.col("specific_risk"))
-        .mul(-1)
-        .alias("alpha")
     )
 
 def gk_alpha(df: pl.DataFrame, ic: float = 0.05) -> pl.DataFrame:
@@ -166,116 +149,32 @@ def ivol() -> dict:
     }
 
 
-def build_ten_k_similarity_df(ten_k_df: pl.DataFrame) -> pl.DataFrame:
-    if ten_k_df.is_empty():
-        return pl.DataFrame(
-            schema={
-                "cusip": pl.String,
-                "filing_date": pl.Date,
-                "ten_k_similarity_value": pl.Float64,
-            }
-        )
-
-    vectorizer = CountVectorizer(
-        lowercase=True,
-        token_pattern=r"(?u)\b[a-zA-Z]{2,}\b",
-        stop_words="english", #stop words gets rid of 'the' 'and' etc
-    )
-
-    ten_k_df = (
-        ten_k_df
-        .filter(
-            pl.col("cusip").is_not_null(),
-            pl.col("filing_date").is_not_null(),
-        )
-        .with_columns(
-            # The downstream asset/FTSE joins are based on 8-character CUSIPs.
-            pl.col("cusip").str.slice(0, 8).alias("cusip"),
-        )
-        .sort(
-            ["cik", "year", "filing_date", "cusip"],
-            descending=[False, True, True, False],
-        )
-        # A company can have multiple rows in a year (for example due to repeat
-        # pulls), but the similarity calculation expects one filing per CIK/year.
-        .unique(subset=["cik", "year"], keep="last")
-        # The legacy notebook logic iterated by CIK ascending and year
-        # descending, so we preserve that order for parity.
-        .sort(["cik", "year"], descending=[False, True])
-    )
-
-    rows: list[dict[str, object]] = []
-    cik_list = ten_k_df["cik"].drop_nulls().unique().sort().to_list()
-
-    for cik in cik_list:
-        sub = ten_k_df.filter(pl.col("cik").eq(cik))
-        year_item = sub.select(["cusip", "filing_date", "item_1a", "year"])
-        year_list = year_item["year"].to_list()
-
-        for year in year_list:
-            current_row = year_item.filter(pl.col("year").eq(year))
-            prior_row = year_item.filter(pl.col("year").eq(year - 1))
-
-            cusip = current_row.select("cusip").item()
-            filing_date = current_row.select("filing_date").item()
-
-            try:
-                doc_1 = current_row.select("item_1a").item()
-                doc_2 = prior_row.select("item_1a").item()
-            except ValueError:
-                rows.append(
-                    {
-                        "cusip": cusip,
-                        "filing_date": filing_date,
-                        "ten_k_similarity_value": None,
-                    }
-                )
-                continue
-
-            try:
-                # Match the legacy construction exactly: current filing text is
-                # P and prior-year filing text is Q in D_KL(P || Q).
-                counts = vectorizer.fit_transform([doc_1, doc_2]).toarray()
-                counts = counts + 1e-10
-                p = counts[0] / counts[0].sum()
-                q = counts[1] / counts[1].sum()
-                kl = float(np.sum(rel_entr(p, q)))
-            except AttributeError:
-                kl = None
-
-            rows.append(
-                {
-                    "cusip": cusip,
-                    "filing_date": filing_date,
-                    "ten_k_similarity_value": kl,
-                }
-            )
-
-    return pl.from_dicts(
-        rows,
-        schema={
-            "cusip": pl.String,
-            "filing_date": pl.Date,
-            "ten_k_similarity_value": pl.Float64,
-        },
-    ).sort(["cusip", "filing_date"])
-
-
 def ten_k_similarity() -> dict:
+    """
+    Generic 10-K signal definition.
+
+    The heavy filing-text preparation, event-date scoring, and forward-filled
+    alpha construction live in the dedicated 10-K flow; this config just keeps
+    the signal name/expression available alongside the rest of the registry.
+    """
     return {
         "expr": pl.col("ten_k_similarity_value").alias("ten_k_similarity"),
         "scorer": zscore_scorer,
-        "alphatizer": ten_k_alphatizer,
         "required_cols": ["ten_k_similarity_value", "specific_risk"],
     }
 
-# Registry for easy lookup
-SIGNALS = {
+# Registry for the non-filing signals that run on the core Barra/asset panel.
+BARRA_SIGNALS = {
     "momentum": momentum(),
     "reversal": reversal(),
     "beta": beta(),
     "barra_reversal": barra_reversal(),
     "barra_momentum": barra_momentum(),
     "ivol": ivol(),
+}
+
+# Full signal registry, including the generic 10-K signal definition.
+SIGNALS = {
+    **BARRA_SIGNALS,
     "ten_k_similarity": ten_k_similarity(),
 }

@@ -10,7 +10,9 @@ from pipelines.all_pipelines import (
     fama_french_5_factors_flow,
 )
 from pipelines.ten_k_filings_flow import ten_k_filings_flow
-from pipelines.signals_flow import signals_flow
+from pipelines.all_signals_flow import all_signals_flow
+from pipelines.barra_signals_flow import barra_signals_flow
+from pipelines.ten_k_signals_flow import ten_k_signals_flow
 from pipelines.utils.enums import DatabaseName
 from pipelines.utils.tables import Database
 
@@ -330,7 +332,89 @@ def signals(pipeline_type, database, start, end):
             database_name = DatabaseName(database)
             database_instance = Database(database_name)
 
-            signals_flow(start, end, database_instance)
+            all_signals_flow(start, end, database_instance)
+
+
+@cli.command(name="barra-signals")
+@click.argument(
+    "pipeline_type",
+    type=click.Choice(
+        ["backfill"], case_sensitive=False
+    ),
+)
+@click.option(
+    "--database",
+    type=click.Choice(VALID_DATABASES, case_sensitive=False),
+    required=True,
+    help="Target database (research or database).",
+)
+@click.option(
+    "--start",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(dt.date(1996, 7, 31)),
+    show_default=True,
+    help="Start date (YYYY-MM-DD).",
+)
+@click.option(
+    "--end",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(dt.date.today()),
+    show_default=True,
+    help="End date (YYYY-MM-DD).",
+)
+def barra_signals(pipeline_type, database, start, end):
+    match pipeline_type:
+        case "backfill":
+            start = start.date() if hasattr(start, "date") else start
+            end = end.date() if hasattr(end, "date") else end
+
+            click.echo(f"Running barra-signals backfill on '{database}' from {start} to {end}...")
+
+            database_name = DatabaseName(database)
+            database_instance = Database(database_name)
+
+            barra_signals_flow(start, end, database_instance)
+
+
+@cli.command(name="ten-k-signals")
+@click.argument(
+    "pipeline_type",
+    type=click.Choice(
+        ["backfill"], case_sensitive=False
+    ),
+)
+@click.option(
+    "--database",
+    type=click.Choice(VALID_DATABASES, case_sensitive=False),
+    required=True,
+    help="Target database (research or database).",
+)
+@click.option(
+    "--start",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(dt.date(1996, 7, 31)),
+    show_default=True,
+    help="Start date (YYYY-MM-DD).",
+)
+@click.option(
+    "--end",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(dt.date.today()),
+    show_default=True,
+    help="End date (YYYY-MM-DD).",
+)
+def ten_k_signals(pipeline_type, database, start, end):
+    match pipeline_type:
+        case "backfill":
+            start = start.date() if hasattr(start, "date") else start
+            end = end.date() if hasattr(end, "date") else end
+
+            click.echo(f"Running ten-k-signals backfill on '{database}' from {start} to {end}...")
+
+            database_name = DatabaseName(database)
+            database_instance = Database(database_name)
+
+            ten_k_signals_flow(start, end, database_instance)
 
 
 @cli.command(name="ten-k")
