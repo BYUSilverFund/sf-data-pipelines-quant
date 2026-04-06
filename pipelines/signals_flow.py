@@ -4,7 +4,7 @@ from pipelines.utils.tables import Database
 from pipelines.signals import SIGNALS
 
 
-def signals_flow(start_date: date, end_date: date, database: Database) -> None:
+def signals_flow(database: Database) -> None:
     """
     Compute signals, scores, and alphas from assets table.
 
@@ -16,7 +16,7 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
     2. Filter to in_universe=True and select needed columns
     3. Collect eagerly (rolling windows require full sorted history)
     4. For each signal: compute signal_value, score (z-score), and alpha
-    5. Write single parquet file per table (all years)
+    5. Write parquet files partitioned by year for each table
     """
 
     # Lazy scan assets_table
@@ -98,15 +98,23 @@ def signals_flow(start_date: date, end_date: date, database: Database) -> None:
     scores_df = pl.concat(scores_rows)
     alphas_df = pl.concat(alphas_rows)
 
-    # Write single file per table (all years)
-    database.signals_table.overwrite(signals_df)
-    database.scores_table.overwrite(scores_df)
-    database.alpha_table.overwrite(alphas_df)
+    # Write by year
+    years = signals_df.select(pl.col("date").dt.year().unique().sort().alias("year"))["year"]
+
+    for year in years:
+        year_filter = pl.col("date").dt.year().eq(year)
+
+        database.signals_table.create_if_not_exists(year)
+        database.signals_table.upsert(year, signals_df.filter(year_filter))
+
+        database.scores_table.create_if_not_exists(year)
+        database.scores_table.upsert(year, scores_df.filter(year_filter))
+
+        database.alpha_table.create_if_not_exists(year)
+        database.alpha_table.upsert(year, alphas_df.filter(year_filter))
 
 
 if __name__ == "__main__":
     from pipelines.utils.enums import DatabaseName
-    start = date(1995, 1, 1)
-    end = date(2025, 12, 31)
     db = Database(DatabaseName.DEVELOPMENT)
-    signals_flow(start, end, db)
+    signals_flow(db)
