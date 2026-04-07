@@ -15,8 +15,8 @@ class Table:
         ids=list[str],
     ) -> None:
         load_dotenv(override=True)
-        home, user = os.getenv("ROOT").split("/")[1:3]
-        self._base_path = f"/{home}/{user}/groups/grp_quant/database/{database.value}"
+        root = os.getenv("ROOT")
+        self._base_path = f"{root}/groups/grp_quant/database/{database.value}"
 
         self._name = name
         self._schema = schema

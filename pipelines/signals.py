@@ -1,4 +1,5 @@
 import polars as pl
+import sf_quant.optimizer as sfo
 
 # Z-Score functions
 def zscore_scorer(df: pl.DataFrame) -> pl.DataFrame:
@@ -78,6 +79,7 @@ def momentum() -> dict:
         ),
         "scorer": zscore_scorer,
         "alphatizer": ic_alphatizer,
+        "constraints": ["ZeroBeta", "ZeroInvestment"]
     }
 
 def reversal() -> dict:
@@ -92,6 +94,7 @@ def reversal() -> dict:
         ),
         "scorer": zscore_scorer,
         "alphatizer": ic_alphatizer,
+        "constraints": ["ZeroBeta", "ZeroInvestment"]
     }
 
 def beta() -> dict:
@@ -104,6 +107,7 @@ def beta() -> dict:
             ),
         "scorer": zscore_scorer,
         "alphatizer": ic_alphatizer,
+        "constraints": ["ZeroInvestment"]
     }
 
 def barra_reversal() -> dict:
@@ -118,6 +122,7 @@ def barra_reversal() -> dict:
             ),
         "scorer": win_zscore,
         "alphatizer": gk_alpha,
+        "constraints": ["ZeroBeta", "ZeroInvestment"]
      }
 
 def barra_momentum() -> dict:
@@ -133,6 +138,7 @@ def barra_momentum() -> dict:
             ),
         "scorer": zscore_scorer,
         "alphatizer": ic_alphatizer,
+        "constraints": ["ZeroBeta", "ZeroInvestment"]
     }
 
 def ivol() -> dict:
@@ -146,6 +152,7 @@ def ivol() -> dict:
             ),
         "scorer": zscore_scorer,
         "alphatizer": ic_alphatizer,
+        "constraints": ["ZeroBeta", "ZeroInvestment"]
     }
 
 # Registry for easy lookup
