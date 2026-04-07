@@ -374,6 +374,7 @@ def barra_signals(pipeline_type, database, start, end):
             database_instance = Database(database_name)
 
             barra_signals_flow(start, end, database_instance)
+            click.echo("Finished barra-signals backfill.")
 
 
 @cli.command(name="ten-k-signals")
@@ -415,6 +416,7 @@ def ten_k_signals(pipeline_type, database, start, end):
             database_instance = Database(database_name)
 
             ten_k_signals_flow(start, end, database_instance)
+            click.echo("Finished ten-k-signals backfill.")
 
 
 @cli.command(name="ten-k")
