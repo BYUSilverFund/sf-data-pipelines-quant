@@ -537,9 +537,34 @@ class Database:
             schema={
                 "date": pl.Date,
                 "barrid": pl.String,
-                "name": pl.String,
                 "alpha": pl.Float64,
             },
-            ids=["date", "barrid", "name"],
+            ids=["date", "barrid"],
+        )
+    
+    @property
+    def signal_returns_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="signal_returns",
+            schema={
+                "date": pl.Date,
+                "signal_name": pl.String,
+                "forward_return": pl.String,
+            },
+            ids=["date", "signal_name"],
+        )
+    
+    @property
+    def signal_weights_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="signal_weights",
+            schema={
+                "date": pl.Date,
+                "signal_name": pl.String,
+                "weight": pl.String,
+            },
+            ids=["date", "signal_name"],
         )
     
