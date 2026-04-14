@@ -39,8 +39,6 @@ def signal_weights_flow(start: dt.date, end: dt.date, database: Database):
 
     # Pivot to wide format
     signal_returns = signal_returns.pivot(index='date', on='signal_name', values='forward_return').sort('date')
-    print(signal_returns)
-    print(signal_returns.filter(pl.any_horizontal(pl.exclude('date').is_null())))
     dates = signal_returns['date'].to_list()
     returns_np = signal_returns.drop('date').to_numpy()
 
@@ -92,9 +90,6 @@ def signal_weights_flow(start: dt.date, end: dt.date, database: Database):
         )
         .sort('date', 'signal_name')
     )
-
-    print(signal_weights)
-    print(signal_weights_long)
 
     years = signal_weights_long['date'].dt.year().unique().sort().to_list()
 

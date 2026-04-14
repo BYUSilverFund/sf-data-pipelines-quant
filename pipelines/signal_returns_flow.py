@@ -1,32 +1,26 @@
 import polars as pl
 import sf_quant.data as sfd
 import datetime as dt
+from utils.tables import Database
 from tqdm import tqdm
 from utils.tables import Database
 
 def signal_returns_flow(signal_names: list[str], database: Database, active_risk: float = 0.05):
     all_signal_returns_list = []
-    for signal_name in signal_names:
-        print(f"Processing {signal_name}.")
-        
+    for signal_name in signal_names:        
         weights_path = f"weights/{signal_name}/{active_risk}/*.parquet"
         weights = pl.read_parquet(weights_path)
 
         start = dt.date(1995, 6, 30)
         end = dt.date.today()
-        returns = (
-            sfd.load_assets(
-                start=start,
-                end=end,
-                columns=['date', 'barrid', 'return']
-            )
+        returns = (database.assets_table.read()
+            .filter(pl.col('date').is_between(start, end))
+            .select('date', 'barrid', 'return')
             .sort('date', 'barrid')
             .with_columns(
                 pl.col('return')
                 .truediv(100)
-                # .shift(-1)
                 .over('barrid')
-                # .alias('forward_return')
             )
         )
 

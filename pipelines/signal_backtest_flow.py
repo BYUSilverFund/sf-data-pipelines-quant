@@ -1,23 +1,37 @@
 import datetime as dt
 from pipelines.signals import SIGNALS
 import polars as pl
-import sf_quant.data as sfd
+from utils.tables import Database
 from sf_backtester import BacktestDynamicConfig, BacktestDynamicRunner, SlurmConfig
 import os
 
-def signal_returns_backfill_flow(start: dt.date, end: dt.date, signal_name: str) -> None:
+def signal_returns_backfill_flow(start: dt.date, end: dt.date, signal_name: str, database: Database) -> None:
     # Get signal config
     signal_config = SIGNALS[signal_name]
 
     # Load necessary data
-    assets = sfd.load_assets(start, end, columns=['date', 'barrid', 'predicted_beta'], in_universe=True)
-    benchmark_weights = sfd.load_benchmark(start, end).rename({'weight': 'benchmark_weight'})
-    alphas = sfd.load_alphas(start, end, names=[signal_name]).drop('signal_name')
-    
+    assets =(
+        database.assets_table.read()
+            .filter(
+                pl.col('date').is_between(start, end),
+                pl.col('in_universe')
+                )
+            .select(
+                "date",
+                "barrid",
+                "predicted_beta",
+                pl.col("market_cap")
+                .truediv(pl.col("market_cap").sum())
+                .over("date")
+                .alias("benchmark_weight"),
+            )
+            .sort(["barrid", "date"])
+        )
+    alphas = database.alpha_table.read().filter(pl.col('date').is_between(start,end), pl.col('signal_name') == signal_name).drop('signal_name')
+
     # Combine data
     data = (
         assets
-        .join(benchmark_weights, on=['date', 'barrid'], how='left')
         .join(alphas, on=['date', 'barrid'], how='left')
         .with_columns(pl.col('alpha').fill_null(0))
         .sort('date', 'barrid')
