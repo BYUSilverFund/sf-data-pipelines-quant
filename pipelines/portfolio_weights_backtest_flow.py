@@ -5,10 +5,7 @@ from utils.tables import Database
 from sf_backtester import BacktestDynamicConfig, BacktestDynamicRunner, SlurmConfig
 import os
 
-def signal_returns_backfill_flow(start: dt.date, end: dt.date, signal_name: str, database: Database) -> None:
-    # Get signal config
-    signal_config = SIGNALS[signal_name]
-
+def portfolio_weights_backtest_flow(start: dt.date, end: dt.date, database: Database) -> None:
     # Load necessary data
     assets =(
         database.assets_table.read()
@@ -27,7 +24,7 @@ def signal_returns_backfill_flow(start: dt.date, end: dt.date, signal_name: str,
             )
             .sort(["barrid", "date"])
         )
-    alphas = database.alpha_table.read().filter(pl.col('date').is_between(start,end), pl.col('signal_name') == signal_name).drop('signal_name')
+    alphas = database.composite_alphas_table.read().filter(pl.col('date').is_between(start, end)).sort(["barrid", "date"])
 
     # Combine data
     data = (
@@ -39,7 +36,7 @@ def signal_returns_backfill_flow(start: dt.date, end: dt.date, signal_name: str,
 
     # Save data to temporary file
     os.makedirs("data", exist_ok=True)
-    data_path = f"data/{signal_name}_{start}_{end}.parquet"
+    data_path = f"data/composite_{start}_{end}.parquet"
     data.write_parquet(data_path)
 
     # Slurm config
@@ -53,14 +50,14 @@ def signal_returns_backfill_flow(start: dt.date, end: dt.date, signal_name: str,
 
     # Backtester config
     config = BacktestDynamicConfig(
-        signal_name=signal_name,
+        signal_name='composite_active',
         data_path=data_path,
         initial_gamma=100,
         target_active_risk=0.05,
         active_weights=True,
         project_root=os.getenv("PROJECT_ROOT"),
         byu_email=os.getenv("BYU_EMAIL"),
-        constraints=signal_config['constraints'],
+        constraints=['ZeroInvestment', 'ZeroBeta'],
         slurm=slurm_config
     )
 
@@ -70,7 +67,7 @@ def signal_returns_backfill_flow(start: dt.date, end: dt.date, signal_name: str,
     
 
 if __name__ == '__main__':
-    start = dt.date(1995, 1, 1)
-    end = dt.date(2025, 12, 31)
-    signal_name = 'barra_momentum'
-    signal_returns_backfill_flow(start, end, signal_name)
+    start = dt.date(2005, 1, 7)
+    end = dt.date(2024, 12, 31)
+    db = Database(DatabaseName.DEVELOPMENT)
+    portfolio_weights_backtest_flow(start, end, db)

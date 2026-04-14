@@ -13,7 +13,7 @@ dependencies = [
     "pyarrow>=22.0.0",
     "python-dotenv>=1.2.1",
     "sf-backtester>=0.2.0",
-    "sf-quant>=0.2.6",
+    "sf-quant>=0.2.7",
     "tqdm>=4.67.1",
     "wrds>=3.4.0",
 ]
