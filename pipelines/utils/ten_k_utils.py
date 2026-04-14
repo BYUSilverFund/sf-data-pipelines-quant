@@ -3,11 +3,9 @@ from datetime import date
 from glob import glob
 import os
 import time
-
 from edgar import Company
 import polars as pl
 from tqdm import tqdm
-
 from pipelines.utils import get_last_market_date
 from pipelines.utils.tables import Database
 
