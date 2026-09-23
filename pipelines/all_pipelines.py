@@ -1,3 +1,4 @@
+import os
 from pipelines.barra_asset_ids_flow import barra_assets_daily_flow
 from pipelines.barra_covariances_flow import (
     barra_covariances_daily_flow,
@@ -89,7 +90,29 @@ def crsp_v2_history_flow(
 def barra_daily_pipeline(database: Database) -> None:
     barra_daily_flow(database)
     id_mappings_flow(database)
-    assets_backfill_flow(dt.date(1995, 7, 31), dt.date.today(), database)
+
+    today = dt.date.today()
+
+    for year in range (1995, today.year + 1):
+        asset_file =database.assets_table._file_path(year)
+
+        # skip historical years that are already built
+        if year < today.year and os.path.exists(asset_file):
+            continue   
+
+        start_date = dt.date(year, 1, 1)
+
+        # Barra history begins July 31, 1995
+        if year == 1995:
+            start_date = dt.date(1995, 7, 31)
+
+        end_date = today if year == today.year else dt.date(year, 12, 31)
+
+        assets_backfill_flow(
+            start_date,
+            end_date,
+            database,
+        )
 
 
 def barra_backfill_pipeline(
