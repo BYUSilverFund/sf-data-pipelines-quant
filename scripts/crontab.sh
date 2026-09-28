@@ -22,7 +22,7 @@ TEMP_CRON=$(mktemp)
 
 cat > "$TEMP_CRON" << EOF
 $EXISTING_CRON
-10 2 * * * cd $SCRIPT_DIR && $SCRIPT_DIR/run_pipeline_with_alerts.sh $SCRIPT_DIR/logs/production_database.log
+10 2 * * * cd $SCRIPT_DIR && sbatch scripts/daily_barra.sh
 EOF
 
 sed -i '/^$/d' "$TEMP_CRON"
@@ -31,5 +31,7 @@ crontab "$TEMP_CRON"
 rm "$TEMP_CRON"
 
 echo "Quant crontab updated successfully."
-echo "View it with: crontab -l"
-echo "Monitor logs with: tail -f $SCRIPT_DIR/logs/production_database.log"
+echo "View cron with: crontab -l"
+echo "View queued/running jobs with: squeue -u \$USER"
+echo "View recent jobs with: sacct -u \$USER --starttime today --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS"
+echo "Monitor pipeline log with: tail -f $SCRIPT_DIR/logs/barra_update.log"
