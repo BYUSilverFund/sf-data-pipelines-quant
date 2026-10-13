@@ -25,6 +25,7 @@ from pipelines.crsp_v2_daily_flow import crsp_v2_daily_backfill_flow
 from pipelines.crsp_v2_monthly_flow import crsp_v2_monthly_backfill_flow
 from pipelines.barra_factors_flow import barra_factors_daily_flow
 from pipelines.fama_french_flow import fama_french_5_factors_flow
+from pipelines.signals_flow import signals_flow
 import datetime as dt
 from pipelines.utils.tables import Database
 
@@ -93,26 +94,28 @@ def barra_daily_pipeline(database: Database) -> None:
 
     today = dt.date.today()
 
-    for year in range (1995, today.year + 1):
-        asset_file =database.assets_table._file_path(year)
+    for year in range(1995, today.year + 1):
+        asset_file = database.assets_table._file_path(year)
 
-        # skip historical years that are already built
+        # Preserve existing historical assets.
         if year < today.year and os.path.exists(asset_file):
-            continue   
+            continue
 
         start_date = dt.date(year, 1, 1)
 
-        # Barra history begins July 31, 1995
         if year == 1995:
             start_date = dt.date(1995, 7, 31)
 
-        end_date = today if year == today.year else dt.date(year, 12, 31)
-
-        assets_backfill_flow(
-            start_date,
-            end_date,
-            database,
+        end_date = (
+            today if year == today.year else dt.date(year, 12, 31)
         )
+
+        assets_backfill_flow(start_date, end_date, database)
+
+    # Run once after all assets updates finish.
+    print("Computing signals, scores, and alphas...", flush=True)
+    signals_flow(database)
+    print("Signals, scores, and alphas completed.", flush=True)
 
 
 def barra_backfill_pipeline(

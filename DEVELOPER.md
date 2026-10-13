@@ -1,389 +1,270 @@
 # Developer Guide
 
-This document covers deployment, scheduling, monitoring, and maintenance for the Silver Fund Quant data pipelines.
+Scheduling, monitoring, and maintenance for the Quant pipelines.
+For basic setup and pipeline commands, see [README.md](README.md).
 
-For basic setup and manual pipeline usage, see `README.md`.
+## Daily Pipeline
 
-## Pipeline Infrastructure
+Cron submits `scripts/daily_barra.sh` to Slurm.
 
-The Quant pipelines run on BYU Research Computing and use:
+The job runs production, development, and research sequentially.
+For each database, it updates:
 
-* shared storage through `grp_quant`
-* Barra source data through `grp_msci_barra`
-* Slurm for compute-intensive scheduled jobs
-* cron for automatic job submission
-* optional Slack alerts for pipeline failures
+1. Daily Barra datasets and asset mappings.
+2. Assets.
+3. Signals, scores, and alphas.
 
-The scheduled flow is:
+Existing historical assets files are skipped; missing years and the
+current year are rebuilt. Signals, scores, and alphas currently
+recalculate the full available assets history.
 
-```text
-cron
-  ↓
-sbatch scripts/daily_barra.sh
-  ↓
-Slurm compute node
-  ↓
-scripts/run_pipeline_with_alerts.sh
-  ↓
-Quant pipeline
-```
+If one database fails, the job attempts the remaining databases.
+The overall job returns a nonzero exit code if any run fails.
 
-Heavy pipeline operations should not be run directly on a Research Computing login node.
+FTSE Russell and CRSP refreshes are not included.
 
 ## Environment
 
-The account responsible for running scheduled pipelines should have a `.env` file in the repository root.
+The scheduling account needs:
 
-Example:
+- A configured `.env` in the repository root.
+- Membership in `grp_quant` and `grp_msci_barra`.
+- Installed project dependencies.
 
-```bash
-USERNAME=your_username
-
-ROOT=/home/${USERNAME}
-PROJECT_ROOT=/home/${USERNAME}/projects/sf-data-pipelines-quant
-
-WRDS_USER=your_wrds_username
-BYU_EMAIL=your_email@byu.edu
-
-DATABASE_ENV=production
-```
-
-`USERNAME` is automatically substituted into variables containing `${USERNAME}`.
-
-For example:
-
-```bash
-USERNAME=gunnjake
-ROOT=/home/${USERNAME}
-```
-
-resolves to:
-
-```text
-/home/gunnjake
-```
-
-Valid values for `DATABASE_ENV` are:
-
-```text
-development
-research
-production
-```
-
-Use `development` when testing infrastructure changes.
-
-The scheduled production account should normally use:
-
-```bash
-DATABASE_ENV=production
-```
-
-## Required Research Computing Groups
-
-The pipeline account needs access to:
-
-```text
-grp_quant
-grp_msci_barra
-```
-
-`grp_quant` provides access to the shared Quant database.
-
-`grp_msci_barra` provides access to the Barra source data.
-
-Verify access before enabling scheduled jobs.
-
-## Environment Check
-
-Run:
+Check configuration:
 
 ```bash
 .venv/bin/python scripts/check_env.py
 ```
 
-This should verify the required environment variables and shared filesystem access.
+The wrapper defaults to `DATABASE_ENV` from `.env`, but an explicit
+database argument overrides it.
 
-## Daily Slurm Job
+The daily Slurm script explicitly selects all three databases,
+regardless of the `.env` default.
 
-The scheduled Quant pipeline should be submitted through Slurm:
+Heavy pipeline work should run on Slurm compute nodes.
 
-```bash
-sbatch scripts/daily_barra.sh
-```
+## Slurm Resources
 
-Do not schedule the Python pipeline directly from cron.
-
-Slurm provides the memory and compute resources needed by the assets portion of the pipeline.
-
-Check active jobs with:
+Current settings in `scripts/daily_barra.sh`:
 
 ```bash
-squeue -u $USER
+#SBATCH --time=02:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --mem=48G
 ```
 
-Check the status of a specific completed job with:
+The October 13, 2026 scheduled run completed all three databases
+in 46 minutes 40 seconds, with approximately 37.9 GiB peak memory.
+
+Runtime and memory could increase as data grows. Investigate
+`TIMEOUT` or `OUT_OF_MEMORY` results before changing allocations.
+
+## Test Development Only
+
+Run from the repository root:
 
 ```bash
-sacct -j <JOB_ID> \
-    --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS
+mkdir -p logs
+
+sbatch \
+    --job-name=quant-signals-dev \
+    --time=02:00:00 \
+    --nodes=1 \
+    --ntasks=1 \
+    --mem=48G \
+    --output=logs/signals-dev-%j.out \
+    --wrap="cd '$PWD' && '$PWD/scripts/run_pipeline_with_alerts.sh' '$PWD/logs/signals_dev.log' development"
 ```
 
-A successful job should report:
+This tests development without running production or research.
+
+Changing `DATABASE_ENV` does not limit `daily_barra.sh` to one database.
+
+## Run All Three Databases
+
+From the repository root:
+
+```bash
+mkdir -p logs
+/apps/slurm/latest/bin/sbatch scripts/daily_barra.sh
+```
+
+Save the returned numeric job ID.
+
+Avoid overlapping jobs that write to the same database.
+
+## Monitor and Verify
+
+Check active jobs:
+
+```bash
+squeue -u "$USER"
+```
+
+Follow a pipeline log:
+
+```bash
+tail -f logs/barra_update_production.log
+```
+
+Press Ctrl+C to stop watching. The job continues running.
+
+For a completed job, replace `JOB_ID` with its numeric ID:
+
+```bash
+sacct -j JOB_ID \
+    --format=JobID,State,ExitCode,Elapsed,MaxRSS
+```
+
+Successful execution reports `COMPLETED` and `0:0`.
+
+Check each database's output:
+
+```bash
+tail -n 5 logs/barra_update_production.log
+tail -n 5 logs/barra_update_development.log
+tail -n 5 logs/barra_update_research.log
+```
+
+Each should end with:
 
 ```text
-COMPLETED
-ExitCode 0:0
+Signals, scores, and alphas completed.
 ```
 
-## Slurm Memory
-
-The assets pipeline can use a significant amount of memory.
-
-Memory is configured in:
-
-```text
-scripts/daily_barra.sh
-```
-
-For example:
+Also inspect the job-specific Slurm log:
 
 ```bash
-#SBATCH --mem=96G
+cat logs/slurm-JOB_ID.out
 ```
 
-If a job ends with:
+Pipeline logs are overwritten each run. Check their timestamps
+before using them to verify a particular job.
 
-```text
-OUT_OF_MEMORY
-```
+Successful execution does not prove data quality. When validating
+changes, check output dates, duplicate keys, and unexpected null
+or infinite values in signals, scores, and alphas.
 
-check the peak memory usage:
+## Cron Setup
+
+Only the designated scheduling account should install this cron.
+
+Create the logs directory first:
 
 ```bash
-sacct -j <JOB_ID> \
-    --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS
+mkdir -p logs
 ```
 
-If the job repeatedly approaches its allocated memory, either increase the Slurm allocation or investigate memory usage in the assets pipeline.
-
-Do not attempt to solve memory limits by running the job directly on a login node.
-
-## Pipeline Logs
-
-The main scheduled pipeline log is:
-
-```text
-logs/barra_update.log
-```
-
-View the most recent output:
+Edit cron:
 
 ```bash
-tail -n 100 logs/barra_update.log
+EDITOR=nano crontab -e
 ```
 
-Follow the log while a pipeline is running:
+Add the following line, replacing `YOUR_USERNAME` with the scheduling
+account's username. Preserve unrelated cron entries.
 
-```bash
-tail -f logs/barra_update.log
+```cron
+10 2 * * * cd /home/YOUR_USERNAME/projects/sf-data-pipelines-quant && /apps/slurm/latest/bin/sbatch scripts/daily_barra.sh >> logs/cron_submit.log 2>&1
 ```
 
-Slurm also creates job-specific output files:
+Adjust the repository path if needed.
 
-```text
-logs/slurm-<JOB_ID>.out
-```
+This submits daily at 2:10 a.m. according to the cron server's timezone.
+Slurm starts the job when resources become available.
 
-## Assets Pipeline
-
-The assets dataset is derived from several Quant datasets and is the most memory-intensive part of the daily update.
-
-Historical assets are stored as yearly Parquet files:
-
-```text
-assets_1995.parquet
-assets_1996.parquet
-...
-assets_2026.parquet
-```
-
-Historical years that already exist do not need to be rebuilt every day.
-
-The daily pipeline should preserve completed historical years and update the current year as new Barra data becomes available.
-
-Full historical backfills should be treated separately from normal daily updates.
-
-## Cron
-
-Cron is responsible only for submitting the Slurm job.
-
-Install or update the Quant cron with:
-
-```bash
-./scripts/crontab.sh
-```
-
-View installed cron entries:
+Verify the entry:
 
 ```bash
 crontab -l
 ```
 
-The expected scheduled flow is:
+Check submission results:
 
-```text
-cron
-  ↓
-sbatch scripts/daily_barra.sh
+```bash
+tail -n 10 logs/cron_submit.log
 ```
 
-The actual pipeline then runs on a Slurm compute node.
+Then verify the submitted job using `sacct`.
 
-Only one developer account should have the active production cron installed at a time. This prevents duplicate production updates.
+Cron submission failures occur before the pipeline wrapper starts,
+so they do not trigger its Slack alert.
 
-## Optional Slack Alerts
+If using `scripts/crontab.sh`, check that it installs the same
+full-path command and submission logging before running it.
 
-Slack alerts are optional and only need to be configured on an account responsible for pipeline monitoring.
+## Slack Failure Alerts
 
-Add these values to that account's `.env`:
+Configure these values in the scheduling account's `.env`:
 
 ```bash
 SLACK_BOT_TOKEN=
 SLACK_CHANNEL_ID=
 ```
 
-Do not commit real Slack credentials.
+Do not commit credentials.
 
-The wrapper sends an alert when a pipeline exits unsuccessfully. The alert includes:
+Pipeline failure alerts include the database, server, exit code,
+and last 20 log lines.
 
-* pipeline name
-* server
-* exit code
-* recent log output
-
-Test the alert system without modifying data:
+Test without modifying database data:
 
 ```bash
 ./scripts/run_pipeline_with_alerts.sh \
-    --test-failure \
-    logs/slack_test.log
+    --test-failure logs/slack_test.log
 ```
 
-Delete the test log afterward if desired:
+The test intentionally exits with code 1. Confirm the Slack message
+contains the intentional test error.
+
+Slurm termination, such as a timeout or memory kill, might prevent
+the wrapper from sending an alert. Check Slurm status as well.
+
+## FTSE Russell Refresh
+
+FTSE membership data is an input to assets and is not refreshed
+by the daily Barra job.
+
+Run a recent FTSE refresh manually within a compute allocation:
 
 ```bash
-rm -f logs/slack_test.log
+python -m pipelines ftse backfill \
+    --database development \
+    --start 2026-10-01 \
+    --end 2026-10-13
 ```
 
-Developers who are not responsible for Slack monitoring do not need these variables.
+Adjust the dates and target database.
 
-## Testing Infrastructure Changes
+The tested connection required a WRDS password and Duo push.
+Unattended FTSE scheduling remains unverified.
 
-Infrastructure changes should be tested against the development database first.
+After refreshing FTSE, run the daily update for the same database
+to rebuild current-year assets and recalculate signals, scores,
+and alphas.
 
-Set:
+Existing historical assets are skipped by daily updates. Changes
+to historical membership data might require a separate assets rebuild.
+
+## Before Pushing Changes
+
+Check syntax and whitespace:
 
 ```bash
-DATABASE_ENV=development
+bash -n scripts/daily_barra.sh
+bash -n scripts/run_pipeline_with_alerts.sh
+python -m py_compile pipelines/all_pipelines.py pipelines/__main__.py
+git diff --check
 ```
 
-Then submit:
+Then:
 
-```bash
-sbatch scripts/daily_barra.sh
-```
-
-Monitor:
-
-```bash
-squeue -u $USER
-```
-
-and:
-
-```bash
-tail -f logs/barra_update.log
-```
-
-After the job finishes:
-
-```bash
-sacct -j <JOB_ID> \
-    --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS
-```
-
-Confirm:
-
-```text
-COMPLETED
-0:0
-```
-
-before testing against production.
-
-## Production Deployment
-
-Before enabling the scheduled production job:
-
-1. Confirm `scripts/check_env.py` passes.
-2. Confirm `grp_quant` and `grp_msci_barra` access.
-3. Test the Slurm job against `development`.
-4. Confirm the development job completes successfully.
-5. Set:
-
-```bash
-DATABASE_ENV=production
-```
-
-6. Submit one manual production Slurm job:
-
-```bash
-sbatch scripts/daily_barra.sh
-```
-
-7. Verify the production job completes successfully.
-8. Install the production cron:
-
-```bash
-./scripts/crontab.sh
-```
-
-9. Confirm:
-
-```bash
-crontab -l
-```
-
-## Useful Commands
-
-Active Slurm jobs:
-
-```bash
-squeue -u $USER
-```
-
-Today's Slurm jobs:
-
-```bash
-sacct -u $USER --starttime today \
-    --format=JobID,JobName,State,ExitCode,Elapsed,MaxRSS
-```
-
-Pipeline log:
-
-```bash
-tail -f logs/barra_update.log
-```
-
-Installed cron:
-
-```bash
-crontab -l
-```
-
-Check database environment:
-
-```bash
-grep DATABASE_ENV .env
-```
+1. Test development through Slurm.
+2. Verify output data and resource usage.
+3. Test all three databases.
+4. Test Slack failure alerts if the wrapper changed.
+5. Confirm the next cron submission and completion.
+6. Update README and this guide to match the implementation.
