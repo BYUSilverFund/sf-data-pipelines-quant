@@ -276,7 +276,7 @@ def signals(pipeline_type, database, start, end):
             database_name = DatabaseName(database)
             database_instance = Database(database_name)
 
-            signals_flow(start, end, database_instance)
+            signals_flow(database_instance)
 
 
 if __name__ == "__main__":

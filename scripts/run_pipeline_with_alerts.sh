@@ -1,130 +1,111 @@
 #!/usr/bin/env bash
 
-# Make pipeline failures inside pipes return a non-zero exit code.
 set -o pipefail
 
 # Resolve the repository root.
-# This script lives in /scripts, so ".." moves up to the repo root.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# Load environment variables from the repo's .env file.
-ENV_FILE="${SCRIPT_DIR}/.env"
+cd "$SCRIPT_DIR" || exit 1
 
-if [ -f "$ENV_FILE" ]; then
-    # Export all variables loaded from .env so child processes can use them.
-    set -a
-    source "$ENV_FILE"
-    set +a
-else
+# Load configuration.
+ENV_FILE="$SCRIPT_DIR/.env"
+
+if [ ! -f "$ENV_FILE" ]; then
     echo "Error: .env file not found at $ENV_FILE" >&2
     exit 1
 fi
 
+set -a
+source "$ENV_FILE"
+ENV_EXIT=$?
+set +a
 
-# ----------------------------------------------------
-# Test Mode
-# ----------------------------------------------------
-# Run:
-# ./scripts/run_pipeline_with_alerts.sh --test-failure logs/slack_test.log
-#
-# This intentionally creates a failed run so the Slack
-# notification system can be tested without touching data.
-if [ "$1" = "--test-failure" ]; then
+if [ "$ENV_EXIT" -ne 0 ]; then
+    echo "Error: could not load $ENV_FILE" >&2
+    exit "$ENV_EXIT"
+fi
 
+if [ "${1:-}" = "--test-failure" ]; then
+    # Test alerts without modifying data.
     PIPELINE_NAME="test-failure"
-    LOG_FILE="$2"
+    LOG_FILE="${2:-}"
 
-    # A log path is required for the test.
     if [ -z "$LOG_FILE" ]; then
-        echo "Usage: ./run_pipeline_with_alerts.sh --test-failure LOG_FILE" >&2
+        echo "Usage: $0 --test-failure LOG_FILE" >&2
         exit 1
     fi
 
-    # Create the log directory if it does not already exist.
-    mkdir -p "$(dirname "$LOG_FILE")"
+    mkdir -p "$(dirname "$LOG_FILE")" || exit 1
 
-    # Write a fake failure message to the log.
     echo "Intentional Quant pipeline failure test" > "$LOG_FILE"
-
-    # Simulate a failed process.
     EXIT_CODE=1
-
-
-# ----------------------------------------------------
-# Pipeline Mode
-# ----------------------------------------------------
 else
+    # An explicit database overrides the .env default.
+    LOG_FILE="${1:-}"
+    DATABASE_ENV="${2:-${DATABASE_ENV:-}}"
 
-    # Make sure DATABASE_ENV is set to a valid database.
+    if [ -z "$LOG_FILE" ]; then
+        echo "Usage: $0 LOG_FILE [DATABASE]" >&2
+        exit 1
+    fi
+
     case "$DATABASE_ENV" in
         production|development|research)
             ;;
         *)
-            echo "Error: DATABASE_ENV must be production, development, or research." >&2
+            echo "Error: database must be production, development, or research." >&2
             exit 1
             ;;
     esac
 
+    export DATABASE_ENV
+
     PIPELINE_NAME="barra update --database $DATABASE_ENV"
-    LOG_FILE="$1"
 
-    # A log path is required when running the real pipeline.
-    if [ -z "$LOG_FILE" ]; then
-        echo "Usage: ./run_pipeline_with_alerts.sh LOG_FILE" >&2
-        exit 1
-    fi
+    mkdir -p "$(dirname "$LOG_FILE")" || exit 1
 
-    # Create the log directory if it does not already exist.
-    mkdir -p "$(dirname "$LOG_FILE")"
-
-    # Run the Quant Barra update using the selected database environment.
-    # All stdout and stderr are written to the supplied log file.
     "$SCRIPT_DIR/.venv/bin/python" -m pipelines \
         barra update --database "$DATABASE_ENV" \
         > "$LOG_FILE" 2>&1
 
-    # Save the pipeline's exit code so we know whether it succeeded.
     EXIT_CODE=$?
 fi
 
-
-# ----------------------------------------------------
-# Failure Notification
-# ----------------------------------------------------
-# If either the real pipeline or test mode fails, send
-# the last 20 lines of the log to Slack.
+# Send a Slack alert if the pipeline failed.
 if [ "$EXIT_CODE" -ne 0 ]; then
-
     ERROR_DETAILS="$(tail -n 20 "$LOG_FILE")"
 
-    # Verify Slack credentials were loaded from .env.
-    if [ -z "$SLACK_BOT_TOKEN" ] || [ -z "$SLACK_CHANNEL_ID" ]; then
-        echo "Error: Slack environment variables are not set. Cannot send alert." >&2
+    if [ -z "${SLACK_BOT_TOKEN:-}" ] || [ -z "${SLACK_CHANNEL_ID:-}" ]; then
+        echo "Slack credentials are missing. Pipeline failed; see $LOG_FILE." >&2
         exit "$EXIT_CODE"
     fi
 
-    # Build the Slack alert message.
     printf -v SLACK_MESSAGE \
-    'Quant pipeline failed\n*Pipeline:* `%s`\n*Server:* `%s`\n*Exit code:* `%s`\n*Recent log output:*\n```%s```' \
-    "$PIPELINE_NAME" \
-    "$(hostname)" \
-    "$EXIT_CODE" \
+        'Quant pipeline failed\n*Pipeline:* `%s`\n*Server:* `%s`\n*Exit code:* `%s`\n*Recent log output:*\n```%s```' \
+        "$PIPELINE_NAME" \
+        "$(hostname)" \
+        "$EXIT_CODE" \
+        "$ERROR_DETAILS"
 
-    # Send the failure notification to Slack.
     SLACK_RESPONSE="$(curl -sS \
+        --connect-timeout 10 \
+        --max-time 30 \
         -X POST "https://slack.com/api/chat.postMessage" \
         -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
         --data-urlencode "channel=$SLACK_CHANNEL_ID" \
         --data-urlencode "text=$SLACK_MESSAGE")"
 
-    # Slack can return HTTP success while still rejecting the API request,
-    # so explicitly check the JSON response for "ok": true.
-    if [[ "$SLACK_RESPONSE" != *'"ok":true'* ]]; then
+    CURL_EXIT=$?
+
+    if [ "$CURL_EXIT" -ne 0 ]; then
+        echo "Slack request failed with curl exit code $CURL_EXIT." >&2
+    elif ! printf '%s' "$SLACK_RESPONSE" |
+        "$SCRIPT_DIR/.venv/bin/python" -c \
+        'import json, sys; sys.exit(0 if json.load(sys.stdin).get("ok") is True else 1)'
+    then
         echo "Slack notification failed: $SLACK_RESPONSE" >&2
     fi
 fi
 
-
-# Return the same exit code as the pipeline.
-# This lets cron correctly detect whether the job succeeded or failed.
+# Preserve the pipeline's exit status for Slurm.
 exit "$EXIT_CODE"
