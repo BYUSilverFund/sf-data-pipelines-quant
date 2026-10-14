@@ -135,7 +135,10 @@ def assets_backfill_flow(start_date: date, end_date: date, database: Database) -
         )
         # Create in_universe column
         .with_columns(
-            pl.col("russell_1000").or_(pl.col("russell_2000")).alias("in_universe")
+            pl.col("russell_1000")
+            .fill_null(False)
+            .or_(pl.col("russell_2000").fill_null(False))
+            .alias("in_universe")
         )
         .drop("russell_rebalance")
     )
