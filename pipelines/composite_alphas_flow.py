@@ -3,9 +3,10 @@ import datetime as dt
 from pipelines.utils.tables import Database
 from tqdm import tqdm
 
-SIGNALS = ['barra_momentum', 'barra_reversal', 'ivol', 'beta']
+SIGNALS = ["barra_momentum", "barra_reversal", "ivol", "beta"]
 
-def composite_alphas_flow(start: dt.date, end: dt.date, database: Database):
+
+def composite_alphas_flow(start: dt.date, end: dt.date, database: Database) -> None:
     """
     Average the signal alphas into one composite alpha per stock.
 
@@ -18,18 +19,18 @@ def composite_alphas_flow(start: dt.date, end: dt.date, database: Database):
     composite_alphas = (
         database.alpha_table.read()
         .filter(
-            pl.col('signal_name').is_in(SIGNALS),
-            pl.col('date').is_between(start, end)
+            pl.col("signal_name").is_in(SIGNALS),
+            pl.col("date").is_between(start, end)
         )
-        .group_by('date', 'barrid')
+        .group_by("date", "barrid")
         .agg(
-            pl.col('alpha').fill_nan(0).sum().truediv(len(SIGNALS))
+            pl.col("alpha").fill_nan(0).sum().truediv(len(SIGNALS))
         )
-        .sort('date', 'barrid')
+        .sort("date", "barrid")
         .collect()
     )
 
-    years = composite_alphas['date'].dt.year().unique().sort().to_list()
+    years = composite_alphas["date"].dt.year().unique().sort().to_list()
 
     for year in tqdm(years, desc="Composite Alphas"):
         year_df = composite_alphas.filter(pl.col("date").dt.year().eq(year))
@@ -37,7 +38,8 @@ def composite_alphas_flow(start: dt.date, end: dt.date, database: Database):
         database.composite_alphas_table.create_if_not_exists(year)
         database.composite_alphas_table.upsert(year, year_df)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     from pipelines.utils.enums import DatabaseName
     db = Database(DatabaseName.DEVELOPMENT)
     start = dt.date(2000, 1, 1)
