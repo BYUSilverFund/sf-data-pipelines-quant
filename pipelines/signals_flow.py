@@ -1,7 +1,9 @@
 from datetime import date
 import polars as pl
 from pipelines.utils.tables import Database
-from pipelines.signals import SIGNALS
+from pipelines.signals import SIGNALS, add_dollar_volume_stats
+
+MIN_PRICE = 5.0
 
 
 def signals_flow(database: Database) -> None:
@@ -13,9 +15,11 @@ def signals_flow(database: Database) -> None:
 
     Strategy:
     1. Lazy scan assets_table (all years needed for rolling window lookback)
-    2. Filter to in_universe=True and select needed columns
+    2. Select needed columns for every barrid that was ever in the universe
     3. Collect eagerly (rolling windows require full sorted history)
-    4. For each signal: compute signal_value, score (z-score), and alpha
+    4. For each signal: compute signal_value on the full history, restrict to
+       in_universe names with a prior close above MIN_PRICE, then compute score
+       (z-score) and alpha
     5. Write parquet files partitioned by year for each table
     """
 
@@ -37,8 +41,9 @@ def signals_flow(database: Database) -> None:
             "daily_volume",
             "in_universe"
         ])
+        # Keep each constituent's full history so rolling windows have no holes
         .filter(
-            pl.col("in_universe") == True
+            pl.col("in_universe").any().over("barrid")
         )
         .with_columns(
             pl.col("return").truediv(100),
@@ -48,7 +53,7 @@ def signals_flow(database: Database) -> None:
     )
 
     # Collect eagerly (rolling windows need full history in memory)
-    assets_df = needed_cols.collect().sort(["barrid", "date"])
+    assets_df = add_dollar_volume_stats(needed_cols.collect().sort(["barrid", "date"]))
 
     # Lists to accumulate results for each table
     signals_rows = []
@@ -62,6 +67,9 @@ def signals_flow(database: Database) -> None:
             .with_columns(signal_config["expr"])
             .with_columns(pl.col(signal_name).alias("signal_value"))
         ).filter(
+                # Tradeable cross-section as of the prior close, before scoring
+                pl.col("in_universe"),
+                pl.col("price").shift(1).over("barrid").gt(MIN_PRICE),
                 pl.col(signal_name).is_not_null(),
                 pl.col("predicted_beta").is_not_null(),
                 pl.col("specific_risk").is_not_null(),
@@ -104,12 +112,17 @@ def signals_flow(database: Database) -> None:
     for year in years:
         year_filter = pl.col("date").dt.year().eq(year)
 
+        # The full history is recomputed, so replace each year. An upsert would
+        # keep rows for names that have since left the cross-section.
+        database.signals_table.delete(year)
         database.signals_table.create_if_not_exists(year)
         database.signals_table.upsert(year, signals_df.filter(year_filter))
 
+        database.scores_table.delete(year)
         database.scores_table.create_if_not_exists(year)
         database.scores_table.upsert(year, scores_df.filter(year_filter))
 
+        database.alpha_table.delete(year)
         database.alpha_table.create_if_not_exists(year)
         database.alpha_table.upsert(year, alphas_df.filter(year_filter))
 

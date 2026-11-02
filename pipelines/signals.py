@@ -12,6 +12,20 @@ def zscore_scorer(df: pl.DataFrame) -> pl.DataFrame:
         .alias("score")
     )
 
+def add_dollar_volume_stats(df: pl.DataFrame) -> pl.DataFrame:
+    """Rolling dollar volume stats. Run on full history, before any cross-sectional filter."""
+    return (df
+            .with_columns(dollar_volume=pl.col("daily_volume").mul(pl.col("price")).log1p())
+            .with_columns(
+                dollar_volume_mean=pl.col("dollar_volume")
+                .rolling_mean(window_size=252, min_samples=1)
+                .over("barrid"),
+                dollar_volume_std=pl.col("dollar_volume")
+                .rolling_std(window_size=252, min_samples=2)
+                .over("barrid"),
+            )
+    )
+
 def win_zscore(df: pl.DataFrame) -> pl.DataFrame:
     return (df
             .with_columns(
@@ -23,15 +37,6 @@ def win_zscore(df: pl.DataFrame) -> pl.DataFrame:
                 .clip(lower_bound=-2.0, upper_bound=2.0)
             )
             .sort(["barrid", "date"])
-            .with_columns(dollar_volume=pl.col("daily_volume").mul(pl.col("price")).log1p())
-            .with_columns(
-                dollar_volume_mean=pl.col("dollar_volume")
-                .rolling_mean(window_size=252, min_samples=1)
-                .over("barrid"),
-                dollar_volume_std=pl.col("dollar_volume")
-                .rolling_std(window_size=252, min_samples=2)
-                .over("barrid"),
-            )
             .with_columns(
                 volume_score=(
                     (pl.col("dollar_volume") - pl.col("dollar_volume_mean"))
@@ -130,8 +135,8 @@ def barra_momentum() -> dict:
         "expr": (
                 pl.col("specific_return")
                 .log1p()
-                .rolling_sum(230)
-                .truediv(pl.col("specific_return").rolling_std(230))
+                .rolling_sum(230, min_samples=200)  # Tolerate gaps in Barra data
+                .truediv(pl.col("specific_return").rolling_std(230, min_samples=200))
                 .shift(21)
                 .over("barrid")
                 .alias("barra_momentum")

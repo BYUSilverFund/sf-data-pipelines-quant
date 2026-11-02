@@ -1,7 +1,10 @@
-from datetime import date
+from datetime import date, timedelta
 import polars as pl
 from pipelines.utils.tables import Database
 from tqdm import tqdm
+
+FTSE_LOOKBACK_DAYS = 45
+
 
 def assets_backfill_flow(start_date: date, end_date: date, database: Database) -> None:
     """
@@ -15,11 +18,14 @@ def assets_backfill_flow(start_date: date, end_date: date, database: Database) -
     """
     years = list(range(start_date.year, end_date.year + 1))
 
+    # Start early enough to include a monthly FTSE snapshot for the forward fill
+    scan_start = start_date - timedelta(days=FTSE_LOOKBACK_DAYS)
+
     # Step 1: Lazy scan all sources
-    returns_lazy = database.barra_returns_table.read().filter(pl.col('date').is_between(start_date, end_date))
-    specific_returns_lazy = database.barra_specific_returns_table.read().filter(pl.col('date').is_between(start_date, end_date))
-    risk_lazy = database.barra_risk_table.read().filter(pl.col('date').is_between(start_date, end_date))
-    volume_lazy = database.barra_volume_table.read().filter(pl.col('date').is_between(start_date, end_date))
+    returns_lazy = database.barra_returns_table.read().filter(pl.col('date').is_between(scan_start, end_date))
+    specific_returns_lazy = database.barra_specific_returns_table.read().filter(pl.col('date').is_between(scan_start, end_date))
+    risk_lazy = database.barra_risk_table.read().filter(pl.col('date').is_between(scan_start, end_date))
+    volume_lazy = database.barra_volume_table.read().filter(pl.col('date').is_between(scan_start, end_date))
     asset_ids_lazy = database.asset_ids_table.read_id_file()
     barra_ids_lazy = database.barra_ids_table.read_id_file()
     ftse_russell_lazy = database.ftse_russell_table.read()
@@ -148,7 +154,7 @@ def assets_backfill_flow(start_date: date, end_date: date, database: Database) -
     # Step 6: Per year, filter and write to parquet
     for year in tqdm(years, desc="Assets Backfill"):
         database.assets_table.delete(year)
-        year_data = combined_eager.filter(pl.col("date").dt.year().eq(year))
+        year_data = combined_eager.filter(pl.col("date").dt.year().eq(year), pl.col("date").ge(start_date))
         year_data.write_parquet(database.assets_table._file_path(year))
 
 if __name__ == '__main__':
