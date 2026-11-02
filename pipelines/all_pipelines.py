@@ -26,6 +26,8 @@ from pipelines.crsp_v2_monthly_flow import crsp_v2_monthly_backfill_flow
 from pipelines.barra_factors_flow import barra_factors_daily_flow
 from pipelines.fama_french_flow import fama_french_5_factors_flow
 from pipelines.signals_flow import signals_flow
+from pipelines.composite_alphas_flow import composite_alphas_flow
+from pipelines.optimal_weights_flow import optimal_weights_flow
 import datetime as dt
 from pipelines.utils.tables import Database
 
@@ -116,6 +118,16 @@ def barra_daily_pipeline(database: Database) -> None:
     print("Computing signals, scores, and alphas...", flush=True)
     signals_flow(database)
     print("Signals, scores, and alphas completed.", flush=True)
+
+    print("Computing composite alphas...", flush=True)
+    composite_alphas_flow(dt.date(1995, 7, 31), today, database)
+    print("Composite alphas completed.", flush=True)
+
+    # Each date is a separate optimization, so only fill recent missing dates.
+    # Use `optimal-weights backfill` for history.
+    print("Computing optimal weights...", flush=True)
+    optimal_weights_flow(today - dt.timedelta(days=30), today, database)
+    print("Optimal weights completed.", flush=True)
 
 
 def barra_backfill_pipeline(

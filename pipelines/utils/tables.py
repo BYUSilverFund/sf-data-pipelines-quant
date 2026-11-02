@@ -541,7 +541,35 @@ class Database:
             },
             ids=["date", "barrid"],
         )
-    
+
+    @property
+    def weighted_composite_alphas_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="weighted_composite_alphas",
+            schema={
+                "date": pl.Date,
+                "barrid": pl.String,
+                "alpha": pl.Float64,
+            },
+            ids=["date", "barrid"],
+        )
+
+    @property
+    def optimal_weights_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="optimal_weights",
+            schema={
+                "date": pl.Date,
+                "barrid": pl.String,
+                "weight": pl.Float64,
+                "gamma": pl.Float64,
+                "active_risk": pl.Float64,
+            },
+            ids=["date", "barrid"],
+        )
+
     @property
     def signal_returns_table(self) -> Table:
         return Table(
