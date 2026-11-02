@@ -117,9 +117,8 @@ Existing historical assets files are skipped, while the current year
 is rebuilt. Signals, scores, alphas, and composite alphas are
 recalculated from the full available assets history.
 
-Optimal weights are only computed for the last 30 days, and only for
-dates that do not already have weights. Use the optimal weights
-backfill below for history.
+Optimal weights fill missing dates from the last 30 days. Use the
+optimal weights backfill for history.
 
 This command does not refresh FTSE Russell or CRSP.
 
@@ -164,8 +163,8 @@ implementation does not use `--start` or `--end` to limit processing.
 ### Composite Alphas Only
 
 The composite alpha is the equal-weight average of the
-`barra_momentum`, `barra_reversal`, `ivol`, and `beta` alphas, matching
-sf-trader. A missing signal alpha counts as 0.
+`barra_momentum`, `barra_reversal`, `ivol`, and `beta` alphas. A missing
+alpha counts as 0.
 
 To recalculate composite alphas using existing alphas:
 
@@ -175,19 +174,15 @@ python -m pipelines composite-alphas backfill --database development
 
 Without date options, this processes July 31, 1995 through today.
 
-`pipelines/weighted_composite_alphas_flow.py` keeps the earlier research
-version, which weights each alpha by its Bayesian signal weight. It is not
-part of the daily update, requires the `signal_weights` table, and writes to
-a separate `weighted_composite_alphas` table.
+`pipelines/weighted_composite_alphas_flow.py` keeps the Bayesian-weighted
+research version. It is not part of the daily update and writes to
+`weighted_composite_alphas`.
 
 ### Optimal Weights Backfill
 
-Optimal weights solve one mean-variance optimization per date using
-composite alphas and the Barra factor risk model. The settings match
-sf-trader: long-only, fully invested, unit beta, no buying on margin,
-and a risk aversion (gamma) of 1,000,000. The universe is in-universe
-assets priced at $5 or more with a predicted beta, specific risk, and
-Barra exposures.
+Optimal weights use sf-quant's `dynamic_mve_optimizer` with a 5% active
+risk cap against a market-cap benchmark. The portfolio is fully
+invested, long-only, and has the benchmark's beta.
 
 To fill historical dates:
 
@@ -198,12 +193,9 @@ python -m pipelines optimal-weights backfill \
     --end 2026-10-26
 ```
 
-Only dates without existing weights are computed, so an interrupted
-backfill can be rerun with the same dates. To recompute dates, delete
-that year's `optimal_weights_<year>.parquet` file first.
-
-A full history is a long-running job. Submit it to Slurm rather than
-running it in the daily update window.
+Only dates without weights are computed, so an interrupted backfill
+can be rerun. To recompute a year, delete its
+`optimal_weights_<year>.parquet` file first. Run full history on Slurm.
 
 ### Help
 
@@ -219,8 +211,8 @@ python -m pipelines optimal-weights --help
 ## Common Problems
 
 - **Missing `ftse_russell_*.parquet` files:** run FTSE backfill for the same database, then retry Barra.
-- **`module 'sf_quant.data' has no attribute 'construct_factor_model_components'`:** the environment has an old `sf-quant`. Run `uv sync`.
-- **`Skipping <date>: optimizer failed`:** the optimizer could not solve that date. It is skipped and retried on the next run.
+- **Missing `sf_quant` attribute or unexpected keyword argument:** sf-quant is older than 0.2.9. Run `uv sync`.
+- **`Optimization failed`:** a date could not be solved. Earlier years are kept. Fix the data, then rerun.
 - **WRDS authentication failed:** check your WRDS credentials, account status, and Duo setup.
 - **WRDS connection closed:** check for a Duo request. A connection issue or authentication timeout could also cause this.
 

@@ -3,22 +3,17 @@ import datetime as dt
 from pipelines.utils.tables import Database
 from tqdm import tqdm
 
-# Signals averaged into the composite alpha. These match the live sf-trader
-# config (vol_scaled_barra_momentum, barra_reversal_volume_clipped, ivol, beta).
 SIGNALS = ['barra_momentum', 'barra_reversal', 'ivol', 'beta']
 
 def composite_alphas_flow(start: dt.date, end: dt.date, database: Database):
     """
-    Combine per-signal alphas into one composite alpha per asset.
+    Average the signal alphas into one composite alpha per stock.
 
-    Matches sf-trader's mean combinator: a missing signal alpha counts as 0,
-    so the composite is the sum of available alphas divided by the number
-    of signals.
-
-    Strategy:
-    1. Lazy scan alphas table, filtered to SIGNALS and [start, end]
-    2. Per (date, barrid): sum alphas and divide by len(SIGNALS)
-    3. Write parquet files partitioned by year
+    Steps:
+    1. Read the alphas for SIGNALS between start and end
+    2. For each date and stock, add up the alphas and divide by the number
+       of signals, so a missing alpha counts as 0
+    3. Save each year to the composite_alphas table
     """
     composite_alphas = (
         database.alpha_table.read()

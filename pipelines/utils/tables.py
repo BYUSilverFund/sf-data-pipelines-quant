@@ -564,6 +564,8 @@ class Database:
                 "date": pl.Date,
                 "barrid": pl.String,
                 "weight": pl.Float64,
+                "gamma": pl.Float64,
+                "active_risk": pl.Float64,
             },
             ids=["date", "barrid"],
         )
