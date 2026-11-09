@@ -1,0 +1,35 @@
+{
+  "_fixture_note": "Curated observations from an actual SEC Company Facts response fetched 2026-11-04 for the named AAT accession; this is a narrow extract, not the complete API response.",
+  "_source_response_sha256": "5773d485144bf7fd8ba71c44c48b6f6cec13152febad658b4a49a170750851eb",
+  "cik": 1500217,
+  "facts": {
+    "us-gaap": {
+      "NetCashProvidedByUsedInOperatingActivities": {
+        "units": {
+          "USD": [
+            {
+              "start": "2025-01-01",
+              "end": "2025-09-30",
+              "val": 126545000,
+              "accn": "0001500217-26-000052",
+              "fy": 2026,
+              "fp": "Q3",
+              "form": "10-Q",
+              "filed": "2026-10-30"
+            },
+            {
+              "start": "2026-01-01",
+              "end": "2026-09-30",
+              "val": 129807000,
+              "accn": "0001500217-26-000052",
+              "fy": 2026,
+              "fp": "Q3",
+              "form": "10-Q",
+              "filed": "2026-10-30"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

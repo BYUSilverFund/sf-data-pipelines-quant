@@ -56,6 +56,6 @@ def ftse_russell_backfill_flow(
 if __name__ == '__main__':
     from utils.enums import DatabaseName
     start = date(1995, 1, 1)
-    end = date(2025, 12, 31)
+    end = date.today()
     db = Database(DatabaseName.DEVELOPMENT)
     ftse_russell_backfill_flow(start, end, db)

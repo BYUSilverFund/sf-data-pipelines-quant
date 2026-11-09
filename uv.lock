@@ -1214,9 +1214,11 @@ dependencies = [
     { name = "polars" },
     { name = "pyarrow" },
     { name = "python-dotenv" },
+    { name = "requests" },
     { name = "sf-backtester" },
     { name = "sf-quant" },
     { name = "tqdm" },
+    { name = "urllib3" },
     { name = "wrds" },
 ]
 
@@ -1234,9 +1236,11 @@ requires-dist = [
     { name = "polars", specifier = ">=1.38.1" },
     { name = "pyarrow", specifier = ">=22.0.0" },
     { name = "python-dotenv", specifier = ">=1.2.1" },
+    { name = "requests", specifier = ">=2.33.1" },
     { name = "sf-backtester", specifier = ">=0.2.0" },
     { name = "sf-quant", specifier = ">=0.2.7" },
     { name = "tqdm", specifier = ">=4.67.1" },
+    { name = "urllib3", specifier = ">=2.5.0" },
     { name = "wrds", specifier = ">=3.4.0" },
 ]
 
