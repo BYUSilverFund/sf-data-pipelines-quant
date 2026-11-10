@@ -102,11 +102,11 @@ def barra(pipeline_type, database, start, end):
 def crsp(pipeline_type, database, start, end):
     load_dotenv(override=True)
     
-    user = os.getenv("WRDS_USER")
-    if user is None:
+    user = os.getenv("WRDS_USER") or os.getenv("USER")
+    if not user:
         raise EnvironmentError(
-            "Missing required environment variable: WRDS_USER. "
-            "Check your .env file."
+            "Could not determine the WRDS username. Set WRDS_USER in .env "
+            "or ensure USER is set in the environment."
         )
 
     match pipeline_type:
@@ -152,10 +152,15 @@ def crsp(pipeline_type, database, start, end):
 def crsp_v2(pipeline_type, database, start, end):
     load_dotenv(override=True)
     
-    user = os.getenv("WRDS_USER")
-    if user is None:
+    user = os.getenv("WRDS_USER") or os.getenv("USER")
+    if not user:
         raise EnvironmentError(
-            "Missing required environment variable: WRDS_USER. "
+            "Could not determine the WRDS username. Set WRDS_USER in .env "
+            "or ensure USER is set in the environment."
+        )
+    if not os.getenv("WRDS_PASSWORD"):
+        raise EnvironmentError(
+            "Missing required environment variable: WRDS_PASSWORD. "
             "Check your .env file."
         )
 
