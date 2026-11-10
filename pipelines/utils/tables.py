@@ -45,9 +45,19 @@ class Table:
 
     def read_id_file(self) -> pl.LazyFrame:
         return pl.scan_parquet(f"{self._base_path}/{self._name}/{self._name}.parquet")
-    
+
     def overwrite(self, df: pl.DataFrame) -> None:
         df.write_parquet(f"{self._base_path}/{self._name}/{self._name}.parquet")
+
+    def overwrite_year(self, year: int, rows: pl.DataFrame) -> None:
+        file_path = self._file_path(year)
+        temp_path = f"{file_path}.{os.getpid()}.tmp"
+        try:
+            rows.write_parquet(temp_path)
+            os.replace(temp_path, file_path)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
 
     def upsert(self, year: int, rows: pl.DataFrame) -> None:
         (
@@ -595,4 +605,3 @@ class Database:
             },
             ids=["date", "signal_name"],
         )
-    
