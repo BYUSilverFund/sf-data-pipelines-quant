@@ -46,9 +46,19 @@ class Table:
 
     def read_id_file(self) -> pl.LazyFrame:
         return pl.scan_parquet(f"{self._base_path}/{self._name}/{self._name}.parquet")
-    
+
     def overwrite(self, df: pl.DataFrame) -> None:
         df.write_parquet(f"{self._base_path}/{self._name}/{self._name}.parquet")
+
+    def overwrite_year(self, year: int, rows: pl.DataFrame) -> None:
+        file_path = self._file_path(year)
+        temp_path = f"{file_path}.{os.getpid()}.tmp"
+        try:
+            rows.write_parquet(temp_path)
+            os.replace(temp_path, file_path)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
 
     def upsert(self, year: int, rows: pl.DataFrame) -> None:
         (
@@ -563,7 +573,35 @@ class Database:
             },
             ids=["date", "barrid"],
         )
-    
+
+    @property
+    def weighted_composite_alphas_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="weighted_composite_alphas",
+            schema={
+                "date": pl.Date,
+                "barrid": pl.String,
+                "alpha": pl.Float64,
+            },
+            ids=["date", "barrid"],
+        )
+
+    @property
+    def optimal_weights_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="optimal_weights",
+            schema={
+                "date": pl.Date,
+                "barrid": pl.String,
+                "weight": pl.Float64,
+                "gamma": pl.Float64,
+                "active_risk": pl.Float64,
+            },
+            ids=["date", "barrid"],
+        )
+
     @property
     def signal_returns_table(self) -> Table:
         return Table(

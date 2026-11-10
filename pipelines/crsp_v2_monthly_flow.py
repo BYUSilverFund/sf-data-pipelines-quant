@@ -1,4 +1,5 @@
 from datetime import date
+import os
 from pipelines.utils import crsp_v2_schema
 import polars as pl
 import wrds
@@ -7,7 +8,9 @@ from pipelines.utils.tables import Database
 
 
 def load_crsp_v2_monthly_df(start_date: date, end_date: date, user: str) -> pl.DataFrame:
-    wrds_db = wrds.Connection(wrds_username=user)
+    wrds_db = wrds.Connection(
+        wrds_username=user, wrds_password=os.getenv("WRDS_PASSWORD")
+    )
 
     df = wrds_db.raw_sql(
         f"""

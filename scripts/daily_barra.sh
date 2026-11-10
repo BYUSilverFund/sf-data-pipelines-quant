@@ -3,6 +3,7 @@
 #SBATCH --time=02:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
 #SBATCH -J "quant-daily"
 #SBATCH --output=logs/slurm-%j.out

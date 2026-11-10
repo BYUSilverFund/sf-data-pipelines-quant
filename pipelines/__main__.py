@@ -11,6 +11,8 @@ from pipelines.all_pipelines import (
 from pipelines.signals_flow import signals_flow
 from pipelines.fundamentals_flow import sec_fundamentals_flow
 from pipelines.compustat_fundamentals import run_compustat_fundamentals
+from pipelines.composite_alphas_flow import composite_alphas_flow
+from pipelines.optimal_weights_flow import optimal_weights_flow
 from pipelines.utils.enums import DatabaseName
 from pipelines.utils.tables import Database
 
@@ -104,11 +106,11 @@ def barra(pipeline_type, database, start, end):
 def crsp(pipeline_type, database, start, end):
     load_dotenv(override=True)
     
-    user = os.getenv("WRDS_USER")
-    if user is None:
+    user = os.getenv("WRDS_USER") or os.getenv("USER")
+    if not user:
         raise EnvironmentError(
-            "Missing required environment variable: WRDS_USER. "
-            "Check your .env file."
+            "Could not determine the WRDS username. Set WRDS_USER in .env "
+            "or ensure USER is set in the environment."
         )
 
     match pipeline_type:
@@ -154,10 +156,15 @@ def crsp(pipeline_type, database, start, end):
 def crsp_v2(pipeline_type, database, start, end):
     load_dotenv(override=True)
     
-    user = os.getenv("WRDS_USER")
-    if user is None:
+    user = os.getenv("WRDS_USER") or os.getenv("USER")
+    if not user:
         raise EnvironmentError(
-            "Missing required environment variable: WRDS_USER. "
+            "Could not determine the WRDS username. Set WRDS_USER in .env "
+            "or ensure USER is set in the environment."
+        )
+    if not os.getenv("WRDS_PASSWORD"):
+        raise EnvironmentError(
+            "Missing required environment variable: WRDS_PASSWORD. "
             "Check your .env file."
         )
 
@@ -336,6 +343,87 @@ def compustat(source_database, limit, start, end, output_root):
     if start_date > end_date:
         raise click.BadParameter("--start must not be after --end", param_hint="--start")
     run_compustat_fundamentals(source_database.lower(), limit, start_date, end_date, output_root)
+
+@cli.command()
+@click.argument(
+    "pipeline_type",
+    type=click.Choice(
+        ["backfill"], case_sensitive=False
+    ),  # Update is currently not supported
+)
+@click.option(
+    "--database",
+    type=click.Choice(VALID_DATABASES, case_sensitive=False),
+    required=True,
+    help="Target database (research or database).",
+)
+@click.option(
+    "--start",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(dt.date(1995, 7, 31)),
+    show_default=True,
+    help="Start date (YYYY-MM-DD).",
+)
+@click.option(
+    "--end",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(dt.date.today()),
+    show_default=True,
+    help="End date (YYYY-MM-DD).",
+)
+def composite_alphas(pipeline_type, database, start, end):
+    match pipeline_type:
+        case "backfill":
+            start = start.date() if hasattr(start, "date") else start
+            end = end.date() if hasattr(end, "date") else end
+
+            click.echo(f"Running composite alphas backfill on '{database}' from {start} to {end}...")
+
+            database_name = DatabaseName(database)
+            database_instance = Database(database_name)
+
+            composite_alphas_flow(start, end, database_instance)
+
+
+@cli.command()
+@click.argument(
+    "pipeline_type",
+    type=click.Choice(
+        ["backfill"], case_sensitive=False
+    ),  # Update is currently not supported
+)
+@click.option(
+    "--database",
+    type=click.Choice(VALID_DATABASES, case_sensitive=False),
+    required=True,
+    help="Target database (research or database).",
+)
+@click.option(
+    "--start",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(dt.date(1995, 7, 31)),
+    show_default=True,
+    help="Start date (YYYY-MM-DD).",
+)
+@click.option(
+    "--end",
+    type=click.DateTime(formats=["%Y-%m-%d"]),
+    default=str(dt.date.today()),
+    show_default=True,
+    help="End date (YYYY-MM-DD).",
+)
+def optimal_weights(pipeline_type, database, start, end):
+    match pipeline_type:
+        case "backfill":
+            start = start.date() if hasattr(start, "date") else start
+            end = end.date() if hasattr(end, "date") else end
+
+            click.echo(f"Running optimal weights backfill on '{database}' from {start} to {end}...")
+
+            database_name = DatabaseName(database)
+            database_instance = Database(database_name)
+
+            optimal_weights_flow(start, end, database_instance)
 
 
 if __name__ == "__main__":

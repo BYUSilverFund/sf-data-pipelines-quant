@@ -1,53 +1,46 @@
 import polars as pl
 import datetime as dt
-from utils.tables import Database
+from pipelines.utils.tables import Database
 from tqdm import tqdm
 
-SIGNALS = ['barra_reveral', 'beta', 'ivol']
+SIGNALS = ["barra_momentum", "barra_reversal", "ivol", "beta"]
 
-def composite_alphas_flow(start: dt.date, end: dt.date, database: Database):
-    signal_weights = (
-        database.signal_weights_table.read()
-        .filter(
-            pl.col('date').is_between(start, end),
-            pl.col('signal_name').is_in(SIGNALS)
-        )
-        .cast({'weight': pl.Float64})
-        .drop_nans()
-        .sort('date', 'signal_name')
-        .collect()
-    )
 
-    alphas = (
+def composite_alphas_flow(start: dt.date, end: dt.date, database: Database) -> None:
+    """
+    Average the signal alphas into one composite alpha per stock.
+
+    Steps:
+    1. Read the alphas for SIGNALS between start and end
+    2. For each date and stock, add up the alphas and divide by the number
+       of signals, so a missing alpha counts as 0
+    3. Save each year to the composite_alphas table
+    """
+    composite_alphas = (
         database.alpha_table.read()
         .filter(
-            pl.col('signal_name').is_in(SIGNALS),
-            pl.col('date').is_between(start, end)
+            pl.col("signal_name").is_in(SIGNALS),
+            pl.col("date").is_between(start, end)
         )
-        .sort('date', 'barrid', 'signal_name')
+        .group_by("date", "barrid")
+        .agg(
+            pl.col("alpha").fill_nan(0).sum().truediv(len(SIGNALS))
+        )
+        .sort("date", "barrid")
         .collect()
     )
 
-    composite_alphas = (
-        alphas
-        .join(signal_weights, on=['date', 'signal_name'], how='inner') # It would be better if this was "left" and we knew how to deal with weird values.
-        .group_by('date', 'barrid')
-        .agg(
-            pl.col('alpha').mul(pl.col('weight')).sum()
-        )
-        .sort('date', 'barrid')
-    )
+    years = composite_alphas["date"].dt.year().unique().sort().to_list()
 
-    years = composite_alphas['date'].dt.year().unique().sort().to_list()
-
-    for year in tqdm(years, desc="Signal Returns"):
+    for year in tqdm(years, desc="Composite Alphas"):
         year_df = composite_alphas.filter(pl.col("date").dt.year().eq(year))
 
         database.composite_alphas_table.create_if_not_exists(year)
         database.composite_alphas_table.upsert(year, year_df)
 
-if __name__ == '__main__':
-    from utils.tables import DatabaseName
+
+if __name__ == "__main__":
+    from pipelines.utils.enums import DatabaseName
     db = Database(DatabaseName.DEVELOPMENT)
     start = dt.date(2000, 1, 1)
     end = dt.date(2024, 12, 31)

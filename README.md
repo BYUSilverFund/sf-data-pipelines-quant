@@ -110,10 +110,15 @@ The update runs:
 1. Daily Barra datasets and asset mappings.
 2. Assets.
 3. Signals, scores, and alphas.
+4. Composite alphas.
+5. Optimal weights.
 
 Existing historical assets files are skipped, while the current year
-is rebuilt. Signals, scores, and alphas are recalculated from the
-full available assets history.
+is rebuilt. Signals, scores, alphas, and composite alphas are
+recalculated from the full available assets history.
+
+Optimal weights fill missing dates from the last 30 days. Use the
+optimal weights backfill for history.
 
 This command does not refresh FTSE Russell or CRSP.
 
@@ -155,6 +160,43 @@ python -m pipelines signals backfill --database development
 This processes the full available assets history. The current
 implementation does not use `--start` or `--end` to limit processing.
 
+### Composite Alphas Only
+
+The composite alpha is the equal-weight average of the
+`barra_momentum`, `barra_reversal`, `ivol`, and `beta` alphas. A missing
+alpha counts as 0.
+
+To recalculate composite alphas using existing alphas:
+
+```bash
+python -m pipelines composite-alphas backfill --database development
+```
+
+Without date options, this processes July 31, 1995 through today.
+
+`pipelines/weighted_composite_alphas_flow.py` keeps the Bayesian-weighted
+research version. It is not part of the daily update and writes to
+`weighted_composite_alphas`.
+
+### Optimal Weights Backfill
+
+Optimal weights use sf-quant's `dynamic_mve_optimizer` with a 5% active
+risk cap against a market-cap benchmark. The portfolio is fully
+invested, long-only, and has the benchmark's beta.
+
+To fill historical dates:
+
+```bash
+python -m pipelines optimal-weights backfill \
+    --database development \
+    --start 2026-01-01 \
+    --end 2026-10-26
+```
+
+Only dates without weights are computed, so an interrupted backfill
+can be rerun. To recompute a year, delete its
+`optimal_weights_<year>.parquet` file first. Run full history on Slurm.
+
 ### Help
 
 ```bash
@@ -162,11 +204,15 @@ python -m pipelines --help
 python -m pipelines barra --help
 python -m pipelines ftse --help
 python -m pipelines signals --help
+python -m pipelines composite-alphas --help
+python -m pipelines optimal-weights --help
 ```
 
 ## Common Problems
 
 - **Missing `ftse_russell_*.parquet` files:** run FTSE backfill for the same database, then retry Barra.
+- **Missing `sf_quant` attribute or unexpected keyword argument:** sf-quant is older than 0.2.9. Run `uv sync`.
+- **`Optimization failed`:** a date could not be solved. Earlier years are kept. Fix the data, then rerun.
 - **WRDS authentication failed:** check your WRDS credentials, account status, and Duo setup.
 - **WRDS connection closed:** check for a Duo request. A connection issue or authentication timeout could also cause this.
 

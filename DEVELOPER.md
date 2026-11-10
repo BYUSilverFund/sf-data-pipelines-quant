@@ -13,10 +13,15 @@ For each database, it updates:
 1. Daily Barra datasets and asset mappings.
 2. Assets.
 3. Signals, scores, and alphas.
+4. Composite alphas.
+5. Optimal weights.
 
 Existing historical assets files are skipped; missing years and the
-current year are rebuilt. Signals, scores, and alphas currently
-recalculate the full available assets history.
+current year are rebuilt. Signals, scores, alphas, and composite
+alphas currently recalculate the full available assets history.
+
+Optimal weights only fill missing dates from the last 30 days. History
+comes from the `optimal-weights backfill` job.
 
 If one database fails, the job attempts the remaining databases.
 The overall job returns a nonzero exit code if any run fails.
@@ -53,14 +58,43 @@ Current settings in `scripts/daily_barra.sh`:
 #SBATCH --time=02:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
 #SBATCH --mem=48G
 ```
+
+Optimal weights run one date per CPU.
 
 The October 13, 2026 scheduled run completed all three databases
 in 46 minutes 40 seconds, with approximately 37.9 GiB peak memory.
 
+That run predates composite alphas and optimal weights. The first run
+after they were added fills up to 30 days of weights, so it will take
+longer.
+
 Runtime and memory could increase as data grows. Investigate
 `TIMEOUT` or `OUT_OF_MEMORY` results before changing allocations.
+
+## Optimal Weights Backfill
+
+Run historical optimal weights as a separate Slurm job:
+
+```bash
+mkdir -p logs
+
+sbatch \
+    --job-name=quant-optimal-weights \
+    --time=24:00:00 \
+    --nodes=1 \
+    --ntasks=1 \
+    --cpus-per-task=16 \
+    --mem=48G \
+    --output=logs/optimal-weights-%j.out \
+    --wrap="cd '$PWD' && .venv/bin/python -m pipelines optimal-weights backfill --database development"
+```
+
+Each year is written when it finishes, so a timed-out job can be
+resubmitted with the same command. Runtime has not been measured yet.
+Do not run a backfill while the daily job writes to the same database.
 
 ## Test Development Only
 
@@ -132,7 +166,7 @@ tail -n 5 logs/barra_update_research.log
 Each should end with:
 
 ```text
-Signals, scores, and alphas completed.
+Optimal weights completed.
 ```
 
 Also inspect the job-specific Slurm log:
@@ -146,7 +180,9 @@ before using them to verify a particular job.
 
 Successful execution does not prove data quality. When validating
 changes, check output dates, duplicate keys, and unexpected null
-or infinite values in signals, scores, and alphas.
+or infinite values in signals, scores, alphas, and composite alphas.
+For optimal weights, check that each date sums to 1 and that
+`active_risk` is close to 0.05.
 
 ## Cron Setup
 
@@ -244,7 +280,11 @@ Unattended FTSE scheduling remains unverified.
 
 After refreshing FTSE, run the daily update for the same database
 to rebuild current-year assets and recalculate signals, scores,
-and alphas.
+alphas, and composite alphas.
+
+Existing optimal weights are not recomputed. To rebuild them, delete
+the affected `optimal_weights_<year>.parquet` files and run the
+backfill.
 
 Existing historical assets are skipped by daily updates. Changes
 to historical membership data might require a separate assets rebuild.
