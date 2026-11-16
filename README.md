@@ -44,5 +44,10 @@ resolver:
   --cutoff "$SEC_COMPARISON_CUTOFF"
 ```
 
+For a new source run without a run-matched accepted review, replace
+`--review-artifact ...` with `--no-sec-reviews`. In the refresh Slurm wrapper,
+set `SEC_OCF_NO_REVIEWS=1` to select that mode. It resolves no SEC values and
+keeps all classified and pending candidates in the versioned output.
+
 See [docs/fundamentals_table.md](docs/fundamentals_table.md) for table and
 field definitions, units, keys, joins, provenance, and missing-value behavior.

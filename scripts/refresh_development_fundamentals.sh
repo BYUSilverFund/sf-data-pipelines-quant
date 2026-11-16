@@ -25,6 +25,11 @@ START_DATE="${COMPUSTAT_START_DATE:-2024-01-01}"
 END_DATE="${COMPUSTAT_END_DATE:-$(date -u +%F)}"
 JOB_LABEL="${SLURM_JOB_ID:-manual-$(date -u +%Y%m%dT%H%M%SZ)}"
 REVIEW_ARTIFACT="${SEC_OCF_REVIEW_ARTIFACT:-$PROJECT/config/sec_ocf_full_universe_candidate_review_v1.json}"
+if [[ "${SEC_OCF_NO_REVIEWS:-0}" == "1" ]]; then
+    RESOLVER_REVIEW_ARGS=(--no-sec-reviews)
+else
+    RESOLVER_REVIEW_ARGS=(--review-artifact "$REVIEW_ARTIFACT")
+fi
 
 process_archived_evidence() {
     local process_output
@@ -93,7 +98,7 @@ PY
         --run-id "$RUN_ID" --mapping-snapshot "$MAPPING_SNAPSHOT" \
         --mapping-date "$MAPPING_DATE" --cutoff "$CUTOFF" \
         --full-universe-result "$FULL_UNIVERSE_RESULT" \
-        --review-artifact "$REVIEW_ARTIFACT"
+        "${RESOLVER_REVIEW_ARGS[@]}"
     printf 'Development fundamentals saved-run workflow completed successfully.\n'
     exit 0
 fi
@@ -178,7 +183,7 @@ process_archived_evidence
     --run-id "$RUN_ID" --mapping-snapshot "$MAPPING_SNAPSHOT" \
     --mapping-date "$MAPPING_DATE" --cutoff "$CUTOFF" \
     --full-universe-result "$FULL_UNIVERSE_RESULT" \
-    --review-artifact "$REVIEW_ARTIFACT" \
+    "${RESOLVER_REVIEW_ARGS[@]}" \
     --rebuild-query-scope 2>&1 | tee -a "$RUN_LOG"
 
 printf 'Development fundamentals refresh completed successfully.\n' | tee -a "$RUN_LOG"

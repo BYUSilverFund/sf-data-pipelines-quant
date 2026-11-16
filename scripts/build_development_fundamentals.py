@@ -111,15 +111,42 @@ def _apply_review_artifact(cases: list[dict], decisions_path: Path, review_path:
     if parse_aware_timestamp(review.get("comparison_cutoff", "")) != cutoff_dt:
         raise ResolutionError("candidate review cutoff does not match resolver cutoff")
     mapping_hash = hashlib.sha256(mapping_path.read_bytes()).hexdigest()
-    index = {(str(c.get("gvkey")), str(c.get("datadate"))): c for c in cases}
-    reviewed = []
+    def period_key(case: dict) -> tuple[str, str, str, str, str, str]:
+        return (
+            str(case.get("gvkey", "")), str(case.get("datadate", "")),
+            str(case.get("fyearq", case.get("fiscal_year", ""))),
+            str(case.get("fqtr", case.get("fiscal_quarter", ""))),
+            str(case.get("fyr", case.get("fiscal_year_end_month", ""))),
+            str(case.get("currency", case.get("compustat_currency", ""))),
+        )
+
+    index: dict[tuple[str, str, str, str, str, str], int] = {}
+    for position, case in enumerate(cases):
+        key = period_key(case)
+        if key in index:
+            raise ResolutionError(f"full-universe decisions contain duplicate fiscal-period keys: {key}")
+        index[key] = position
+    replacements: dict[int, dict] = {}
     for item in review.get("cases", []):
-        key = (str(item.get("gvkey")), str(item.get("datadate")))
-        source = index.get(key)
-        if source is None:
-            raise ResolutionError(f"review period is absent from full-universe decisions: {key}")
+        key = period_key({
+            **item,
+            "fyearq": item.get("fyearq"), "fqtr": item.get("fqtr"),
+            "fyr": item.get("fyr"), "currency": item.get("compustat_currency"),
+        })
+        position = index.get(key)
+        if position is None:
+            raise ResolutionError(f"review fiscal period is absent from full-universe decisions: {key}")
+        source = cases[position]
         ev, rv = item.get("evidence", {}), item.get("review", {})
-        if item.get("decision") != "accepted":
+        decision = item.get("decision")
+        if decision != "accepted":
+            if decision not in {"rejected", "unresolved"}:
+                raise ResolutionError(f"unsupported reviewed decision {decision!r} for {key}")
+            replacements[position] = {
+                **source, "decision": decision,
+                "classification": "Rejected by review" if decision == "rejected" else "Unresolved by review",
+                "review_decision": decision, "review_decision_reason": rv.get("reason", ""),
+            }
             continue
         if any(rv.get(name) is not True for name in (
             "identity_verified", "consolidation_scope_verified", "period_verified",
@@ -164,7 +191,7 @@ def _apply_review_artifact(cases: list[dict], decisions_path: Path, review_path:
             raise ResolutionError(f"review amount lacks inline XBRL corroboration: {key}")
         period_end = item["period_end"]
         relationship = item.get("mapping_relationships", [])
-        reviewed.append({
+        replacements[position] = {
             **source, "decision": "accepted", "classification": "accepted",
             "gvkey": key[0], "barrid": item["barrid"],
             "cik": item["cik"], "period_end": period_end, "period_start": item["period_start"],
@@ -188,11 +215,12 @@ def _apply_review_artifact(cases: list[dict], decisions_path: Path, review_path:
             "mapping_provenance": json.dumps(relationship, sort_keys=True),
             "extraction_version": review["schema_version"], "decision_reason": rv["reason"],
             "review_artifact_path": str(review_path.resolve()),
-        })
+        }
     accepted_count = sum(item.get("decision") == "accepted" for item in review.get("cases", []))
-    if len(reviewed) != accepted_count:
+    validated_count = sum(case.get("decision") == "accepted" for case in replacements.values())
+    if validated_count != accepted_count:
         raise ResolutionError("accepted candidate reviews were not all validated")
-    return cases + reviewed
+    return [replacements.get(position, case) for position, case in enumerate(cases)]
 
 
 def _defaults() -> tuple[Path, Path, Path, list[str], date]:
@@ -367,7 +395,8 @@ def run(*, run_ids: list[str] | None = None, mapping_snapshot: Path | None = Non
         mapping_date: date | None = None, cutoff: str,
         rebuild_query_scope: bool = False,
         full_universe_result: Path,
-        review_artifact: Path = DEFAULT_REVIEW) -> dict:
+        review_artifact: Path | None = DEFAULT_REVIEW,
+        no_sec_reviews: bool = False) -> dict:
     database_root, query_manifest_path, default_mapping, default_run_ids, default_date = _defaults()
     compustat_root = database_root / "fundamentals/compustat"
     archive_root = database_root / "fundamentals/sec_filings"
@@ -440,10 +469,18 @@ def run(*, run_ids: list[str] | None = None, mapping_snapshot: Path | None = Non
     decisions_path, observations_path, cases = _full_universe_inputs(
         full_universe_result, run_id=selected_runs[0], mapping_path=selected_mapping, cutoff=cutoff,
     )
-    cases = _apply_review_artifact(
-        cases, decisions_path, review_artifact, run_id=selected_runs[0],
-        cutoff=cutoff, mapping_path=selected_mapping,
-    )
+    if no_sec_reviews:
+        if review_artifact is not None:
+            raise ValueError("--no-sec-reviews cannot be combined with a review artifact")
+        review_mode = "none"
+    else:
+        if review_artifact is None:
+            raise ValueError("a review artifact is required unless --no-sec-reviews is selected")
+        cases = _apply_review_artifact(
+            cases, decisions_path, review_artifact, run_id=selected_runs[0],
+            cutoff=cutoff, mapping_path=selected_mapping,
+        )
+        review_mode = "reviewed"
     classifications: dict[str, int] = {}
     for case in cases:
         status = str(case.get("classification", "requiring identity review"))
@@ -456,6 +493,7 @@ def run(*, run_ids: list[str] | None = None, mapping_snapshot: Path | None = Non
         decisions_path=decisions_path, observations_path=observations_path,
         source_run_id=selected_runs[0], output_root=database_root / "development",
         full_universe_cases=cases,
+        review_mode=review_mode,
     )
     print(f"  scope_id={scope} output={output_path}", flush=True)
 
@@ -467,7 +505,8 @@ def run(*, run_ids: list[str] | None = None, mapping_snapshot: Path | None = Non
         "query_tables": query_result,
         "candidate_decisions": str(decisions_path),
         "candidate_observations": str(observations_path),
-        "candidate_review_artifact": str(review_artifact.resolve()),
+        "candidate_review_artifact": str(review_artifact.resolve()) if review_artifact else None,
+        "candidate_review_mode": review_mode,
         "sec_evidence_refresh": sec_refresh,
         "candidate_classifications": classifications,
         "additional_candidates": 0,
@@ -486,15 +525,21 @@ def main() -> None:
     parser.add_argument("--cutoff", required=True, help="Explicit timezone-aware resolution cutoff")
     parser.add_argument("--full-universe-result", type=Path, required=True,
                         help="Processing-result JSON emitted by scripts.process_archived_sec_ocf_candidates")
-    parser.add_argument("--review-artifact", type=Path, default=DEFAULT_REVIEW)
+    review_group = parser.add_mutually_exclusive_group()
+    review_group.add_argument("--review-artifact", type=Path,
+                              help="Versioned evidence-backed candidate review artifact")
+    review_group.add_argument("--no-sec-reviews", action="store_true",
+                              help="Build from the current full-universe manifest with zero SEC acceptance decisions")
     parser.add_argument("--rebuild-query-scope", action="store_true", help="Replace derived development query tables if their scope changed.")
     args = parser.parse_args()
     try:
+        review_artifact = None if args.no_sec_reviews else (args.review_artifact or DEFAULT_REVIEW)
         result = run(run_ids=args.run_id, mapping_snapshot=args.mapping_snapshot,
                      mapping_date=args.mapping_date, cutoff=args.cutoff,
                      rebuild_query_scope=args.rebuild_query_scope,
                      full_universe_result=args.full_universe_result,
-                     review_artifact=args.review_artifact)
+                     review_artifact=review_artifact,
+                     no_sec_reviews=args.no_sec_reviews)
     except (ValueError, FileNotFoundError, ResolutionError) as exc:
         parser.error(str(exc))
     print(json.dumps(result, indent=2, sort_keys=True, default=str))

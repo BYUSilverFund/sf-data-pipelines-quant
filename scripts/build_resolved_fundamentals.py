@@ -28,6 +28,7 @@ def build(
     source_run_id: str,
     output_root: Path | None,
     full_universe_cases: list[dict],
+    review_mode: str,
 ) -> tuple[Path, str, pl.DataFrame]:
     """Resolve accepted reviews only; company and period policy lives in review evidence."""
     if not full_universe_cases:
@@ -79,6 +80,7 @@ def build(
     input_hashes = {
         str(decisions_path): sha256_file(decisions_path),
         str(mapping_path): sha256_file(mapping_path),
+        "review_mode": review_mode,
         "resolved_builder_contract": "full-universe-generic-v1",
     }
     for review_path in sorted({str(x["review_artifact_path"]) for x in eligible if x.get("review_artifact_path")}):
@@ -120,6 +122,7 @@ def build(
     path = write_scoped_table(frame, output_root=output, scope=scope, manifest={
         "schema_version": 1, "policy_version": POLICY_VERSION, "policy_cutoff": cutoff,
         "source_run_id": source_run_id, "input_hashes": input_hashes,
+        "review_mode": review_mode,
         "source_row_count": original.height, "resolved_row_count": frame.height,
         "accepted_company_periods": len({(x["gvkey"], x["datadate"]) for x in eligible}),
         "accepted_sec_rows": fills.height, "classified_decisions": len(full_universe_cases),
