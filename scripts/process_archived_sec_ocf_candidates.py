@@ -23,7 +23,7 @@ from scripts.build_sec_ocf_ytd_cohort import (
 from scripts.sec_full_universe import load_or_create_discovery
 
 
-def run(run_id: str) -> dict:
+def run(run_id: str, collection_cutoff: date) -> dict:
     load_dotenv(dotenv_path=Path.cwd() / ".env", override=True)
     root = Path(os.environ["ROOT"]).expanduser().resolve()
     compustat_root = root / "groups/grp_quant/database/fundamentals/compustat"
@@ -95,6 +95,7 @@ def run(run_id: str) -> dict:
     coverage = {
         "schema_version": 1,
         "source_run_id": run_id,
+        "collection_cutoff": collection_cutoff.isoformat(),
         "candidate_periods": len(candidates),
         "discovery_input": str(discovery_path),
         "discovery_id": discovery["discovery_id"],
@@ -125,6 +126,7 @@ def run(run_id: str) -> dict:
             run_id=run_id,
             mapping_path=mapping_path,
             cases=ready,
+            collection_cutoff=collection_cutoff,
         )
         for case in classified:
             status = str(case.get("classification", "requiring identity review"))
@@ -138,7 +140,13 @@ def run(run_id: str) -> dict:
         "decisions_manifest": str(decisions_path) if decisions_path else None,
         "observations_parquet": str(observations_path) if observations_path else None,
         "sec_requests_made": 0,
+        "collection_cutoff": collection_cutoff.isoformat(),
     }
+    result_bytes = json.dumps(result, sort_keys=True, separators=(",", ":")).encode() + b"\n"
+    result_path = _write_content_addressed(
+        case_dir, "full_universe_processing_result", ".json", result_bytes,
+    )
+    result["processing_manifest"] = str(result_path)
     print(json.dumps(result, indent=2, sort_keys=True), flush=True)
     return result
 
@@ -146,8 +154,10 @@ def run(run_id: str) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", required=True)
+    parser.add_argument("--collection-cutoff", required=True, type=date.fromisoformat,
+                        help="Explicit filing-date cutoff used for archived classification")
     args = parser.parse_args()
-    run(args.run_id)
+    run(args.run_id, args.collection_cutoff)
 
 
 if __name__ == "__main__":

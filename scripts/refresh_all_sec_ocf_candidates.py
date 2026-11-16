@@ -1,4 +1,4 @@
-"""Refresh and classify SEC evidence for every uniquely mapped null OCF-YTD period."""
+"""Resume SEC evidence downloads for uniquely mapped null OCF-YTD periods."""
 
 from __future__ import annotations
 

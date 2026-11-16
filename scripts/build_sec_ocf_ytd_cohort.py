@@ -1,4 +1,4 @@
-"""Build a content-addressed, offline audit for ten mapped OCF-YTD gaps."""
+"""Build content-addressed OCF-YTD reviews from explicitly selected archived gaps."""
 
 from __future__ import annotations
 
@@ -34,29 +34,7 @@ from pipelines.sec_ocf_cohort import (
 )
 
 
-ARCHIVE_ROOT = Path("/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings")
-COMPUSTAT_ROOT = Path("/home/gunnjake/groups/grp_quant/database/fundamentals/compustat")
-RUN_ID = "run_bd766d2869a3a83fce895048"
-MAPPING_NAME = (
-    "membership_2026-08-31_"
-    "5b1f0a0bbf5450a79c5594c61416d9d096e1b82e8e1c4a1a4e5b08675cdaf132.parquet"
-)
-COLLECTION_CUTOFF = date(2026, 10, 29)
 NO_HISTORICAL_CUTOFF = None
-
-COHORT = (
-    {"cik": "0001518715", "gvkey": "018948", "barrid": "USAHMH1", "ticker": None, "datadate": "2024-09-30", "fyearq": 2024},
-    {"cik": "0001500217", "gvkey": "185549", "barrid": "USAC121", "ticker": "AAT", "datadate": "2026-09-30", "fyearq": 2026},
-    {"cik": "0001557860", "gvkey": "018626", "barrid": "USBCBI1", "ticker": None, "datadate": "2024-09-30", "fyearq": 2024},
-    {"cik": "0000920427", "gvkey": "062243", "barrid": "USAVIJ1", "ticker": None, "datadate": "2026-09-30", "fyearq": 2026},
-    {"cik": "0000831001", "gvkey": "003243", "barrid": "USAL5N1", "ticker": None, "datadate": "2026-09-30", "fyearq": 2026},
-    {"cik": "0000886982", "gvkey": "114628", "barrid": "USA2ND1", "ticker": None, "datadate": "2026-09-30", "fyearq": 2026},
-    {"cik": "0000072971", "gvkey": "008007", "barrid": "USAK1N1", "ticker": None, "datadate": "2026-09-30", "fyearq": 2026},
-    {"cik": "0000019617", "gvkey": "002968", "barrid": "USACTE1", "ticker": None, "datadate": "2026-09-30", "fyearq": 2026},
-    {"cik": "0001649749", "gvkey": "027871", "barrid": "USBDG41", "ticker": None, "datadate": "2026-09-30", "fyearq": 2026},
-    {"cik": "0001331520", "gvkey": "164633", "barrid": "USA2961", "ticker": None, "datadate": "2026-09-30", "fyearq": 2026},
-)
-
 
 def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
@@ -173,6 +151,7 @@ def _case_result(
     mapping_snapshot_path: Path,
     compustat_run_id: str,
     quarterly_hash: str,
+    collection_cutoff: date,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     end = date.fromisoformat(case["datadate"])
     start = _fiscal_ytd_start(case, end)
@@ -314,7 +293,7 @@ def _case_result(
         inline_facts=inline_evidence,
         expected_period_start=start,
         expected_period_end=end,
-        collection_cutoff=COLLECTION_CUTOFF,
+        collection_cutoff=collection_cutoff,
     )
 
     if not comp_verified:
@@ -327,7 +306,7 @@ def _case_result(
     accepted_accessions = {
         filing["accessionNumber"]
         for filing in target_filings
-        if date.fromisoformat(filing["filingDate"]) <= COLLECTION_CUTOFF
+        if date.fromisoformat(filing["filingDate"]) <= collection_cutoff
     }
     all_observation_rows = []
     for obs in observations:
@@ -410,8 +389,8 @@ def _case_result(
         "fiscal_year_end_month": company_row.get("fyr"),
         "period_start": start.isoformat(),
         "period_end": end.isoformat(),
-        "collection_cutoff": COLLECTION_CUTOFF.isoformat(),
-        "collection_cutoff_basis": "completed Compustat run ended 2026-10-29",
+        "collection_cutoff": collection_cutoff.isoformat(),
+        "collection_cutoff_basis": f"explicit collection cutoff {collection_cutoff.isoformat()}",
         "historical_investment_cutoff": NO_HISTORICAL_CUTOFF,
         "historical_availability_claimed": False,
         "taxonomy_names": sorted(taxonomy_names),
@@ -457,7 +436,7 @@ def sec_fetch_progress_path(archive_root: Path, cases: tuple[dict[str, Any], ...
 
 
 def refresh_archived_sec_evidence(
-    *, archive_root: Path = ARCHIVE_ROOT, cases: tuple[dict[str, Any], ...] = COHORT,
+    *, archive_root: Path, cases: tuple[dict[str, Any], ...],
 ) -> dict[str, Any]:
     """Resume SEC evidence collection from valid archives, recording per-CIK progress."""
     load_dotenv(override=True)
@@ -624,7 +603,7 @@ def refresh_archived_sec_evidence(
 
 def discover_additional_null_gaps(
     mapping: pl.DataFrame, quarterly: pl.DataFrame, *, limit: int | None = 10,
-    include_known: bool = False,
+    known_cases: tuple[dict[str, Any], ...] = (),
 ) -> tuple[dict[str, Any], ...]:
     """Choose deterministic null company-period gaps, optionally across the full universe."""
     if limit is not None and limit < 0:
@@ -637,9 +616,7 @@ def discover_additional_null_gaps(
     required_quarterly = {"gvkey", "datadate", "fyearq", "oancfy"}
     if not required_quarterly.issubset(quarterly.columns):
         raise ValueError(f"quarterly extract is missing columns: {sorted(required_quarterly - set(quarterly.columns))}")
-    known = set() if include_known else {
-        (str(case["gvkey"]), str(case["datadate"])) for case in COHORT
-    }
+    known = {(str(case["gvkey"]), str(case["datadate"])) for case in known_cases}
     period_columns = ["gvkey", "datadate", "fyearq"]
     period_columns.extend(
         column for column in ("fqtr", "fyr", "curcdq", "currency")
@@ -714,14 +691,14 @@ def discover_additional_null_gaps(
 
 def build(
     *,
-    compustat_root: Path = COMPUSTAT_ROOT,
-    archive_root: Path = ARCHIVE_ROOT,
-    run_id: str = RUN_ID,
-    mapping_path: Path | None = None,
-    cases: tuple[dict[str, Any], ...] | None = None,
+    compustat_root: Path,
+    archive_root: Path,
+    run_id: str,
+    mapping_path: Path,
+    cases: tuple[dict[str, Any], ...],
+    collection_cutoff: date,
 ) -> tuple[Path, Path, list[dict[str, Any]]]:
-    selected_cases = cases or COHORT
-    mapping_path = mapping_path or (compustat_root.parent / "sec_filings" / "security_mappings" / MAPPING_NAME)
+    selected_cases = cases
     quarterly_path = compustat_root / "source_extracts" / run_id / "quarterly.parquet"
     mapping = pl.read_parquet(mapping_path)
     quarterly = pl.read_parquet(quarterly_path)
@@ -746,6 +723,7 @@ def build(
             mapping_snapshot_path=mapping_path,
             compustat_run_id=run_id,
             quarterly_hash=quarterly_hash,
+            collection_cutoff=collection_cutoff,
         )
         cases.append(case_result)
         observations.extend(case_observations)
@@ -755,16 +733,10 @@ def build(
             "schema_version": "sec_ocf_ytd_cohort_v1",
             "metric": "operating_cash_flow_ytd",
             "tag": f"{OCF_TAXONOMY}:{OCF_TAG}",
-            "collection_cutoff": COLLECTION_CUTOFF.isoformat(),
+            "collection_cutoff": collection_cutoff.isoformat(),
             "historical_investment_cutoff": None,
             "historical_availability_policy": "Not evaluated: no historical investment cutoff was supplied. SEC filing/acceptance timestamps are retained per accession; datadate and current Compustat extracts are not treated as historical availability proof.",
             "amended_and_conflicting_observations": "retained by accession as separate rows",
-            "supersedes_preliminary_mechanics_assessment": {
-                "prior_manifest": str(archive_root / "fallback_pilots" / "cohort_2026-11" / "cohort_validation.json"),
-                "prior_classification": "timely_compustat_source_gap_sec_standard_fact_present",
-                "current_disposition": "Unresolved",
-                "reason": "The expanded accession scan found a later 2025-11-17 comparative filing with +217358000 USD for the same 2024 YTD period, while the original filing reported -47042000 USD.",
-            },
             "cases": cases,
         },
         sort_keys=True,
@@ -781,16 +753,3 @@ def build(
     parquet_tmp.unlink()
     observations_path = _write_content_addressed(case_dir, "ocf_ytd_observations", ".parquet", observation_bytes)
     return manifest_path, observations_path, cases
-
-
-def main() -> None:
-    manifest_path, observations_path, cases = build()
-    print(f"cases={len(cases)} observations={sum(row['all_matching_period_observation_count'] for row in cases)}")
-    for case in cases:
-        print(case["cik"], case["gvkey"], case["datadate"], case["classification"], case["reason"])
-    print(f"manifest={manifest_path}")
-    print(f"observations={observations_path}")
-
-
-if __name__ == "__main__":
-    main()

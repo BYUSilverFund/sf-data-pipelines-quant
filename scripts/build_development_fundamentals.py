@@ -9,12 +9,9 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import sys
 
 import polars as pl
 from dotenv import load_dotenv
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from pipelines.fundamentals_query import build_compustat_query_tables
 from pipelines.fundamentals_query import FORMAT_FILTERS
@@ -23,22 +20,13 @@ from pipelines.utils.enums import DatabaseName
 from pipelines.utils.fundamentals_schema import fundamentals_table_keys
 from pipelines.utils.tables import Database
 from scripts.build_resolved_fundamentals import build as build_resolved
-from scripts.build_sec_ocf_ytd_cohort import (
-    discover_additional_null_gaps,
-)
 
 
-DEFAULT_CUTOFF = "2026-10-29T23:59:59+00:00"
-DEFAULT_REVIEW = Path(__file__).resolve().parents[1] / "docs/sec_ocf_full_universe_candidate_review_v1.json"
-FULL_UNIVERSE_JOB_LOG = Path(__file__).resolve().parents[1] / "logs/slurm-sec-ocf-archive-process-15268690.out"
+DEFAULT_REVIEW = Path(__file__).resolve().parents[1] / "config/sec_ocf_full_universe_candidate_review_v1.json"
 
 
-def _full_universe_inputs(log_path: Path, *, run_id: str, mapping_path: Path, cutoff: str) -> tuple[Path, Path, list[dict]]:
-    raw = log_path.read_text()
-    start, end = raw.find("{\n"), raw.rfind("\n}")
-    if start < 0 or end < start:
-        raise ResolutionError(f"full-universe job log has no result manifest: {log_path}")
-    result = json.loads(raw[start:end + 2])
+def _full_universe_inputs(result_path: Path, *, run_id: str, mapping_path: Path, cutoff: str) -> tuple[Path, Path, list[dict]]:
+    result = _read_json(result_path)
     if result.get("source_run_id") != run_id:
         raise ResolutionError("full-universe source run does not match the selected Compustat run")
     keys = ("discovery_input", "coverage_manifest", "decisions_manifest", "observations_parquet")
@@ -61,7 +49,10 @@ def _full_universe_inputs(log_path: Path, *, run_id: str, mapping_path: Path, cu
         raise ResolutionError("full-universe mapping path/hash mismatch")
     if discovery.get("source_run_id") != run_id or coverage.get("source_run_id") != run_id:
         raise ResolutionError("full-universe source run mismatch")
-    if decisions.get("collection_cutoff") != date.fromisoformat(cutoff[:10]).isoformat():
+    collection_day = date.fromisoformat(cutoff[:10]).isoformat()
+    if (decisions.get("collection_cutoff") != collection_day
+            or result.get("collection_cutoff") != coverage.get("collection_cutoff")
+            or coverage.get("collection_cutoff") != collection_day):
         raise ResolutionError("full-universe decision cutoff mismatch")
     cases = decisions.get("cases", [])
     if not cases:
@@ -308,28 +299,6 @@ def _validate_resolved_table(database: Database, scope: str, candidate_cases: li
                 f"unaccepted candidate {case['gvkey']} {case['datadate']} did not remain null"
             )
 
-    fdic_reason = "FDIC filer; separate source required."
-    for gvkey in ("120318", "177009"):
-        row = resolved.filter(
-            (pl.col("gvkey") == gvkey)
-            & (pl.col("datadate") == date(2026, 9, 30))
-        )
-        if row.height != 1:
-            raise ResolutionError(f"expected one FDIC-filer exclusion row for {gvkey}, found {row.height}")
-        # FDIC exclusion blocks SEC supplementation. It does not override an
-        # existing Compustat observation, which the resolver must preserve.
-        source_row = source.filter(
-            (pl.col("gvkey") == gvkey) & (pl.col("datadate") == date(2026, 9, 30))
-        )
-        if source_row.height != 1:
-            raise ResolutionError(f"expected one source FDIC-filer row for {gvkey}, found {source_row.height}")
-        original_value = source_row["oancfy"][0]
-        if row["resolved_oancfy"][0] != original_value:
-            raise ResolutionError(f"FDIC-filer exclusion {gvkey} changed the Compustat value")
-        if original_value is None and row["selection_reason"][0] != fdic_reason:
-            raise ResolutionError(f"null FDIC-filer exclusion {gvkey} lacks the required label")
-        if original_value is not None and row["selected_source"][0] != "compustat":
-            raise ResolutionError(f"non-null FDIC-filer exclusion {gvkey} lost Compustat source precedence")
 
     table_path = Path(table._base_path) / table._name
     manifest_path = table_path / "manifest.json"
@@ -395,9 +364,9 @@ def _reuse_matching_query_scope(
 
 
 def run(*, run_ids: list[str] | None = None, mapping_snapshot: Path | None = None,
-        mapping_date: date | None = None, cutoff: str = DEFAULT_CUTOFF,
-        rebuild_query_scope: bool = False, refresh_sec: bool = False,
-        full_universe_log: Path = FULL_UNIVERSE_JOB_LOG,
+        mapping_date: date | None = None, cutoff: str,
+        rebuild_query_scope: bool = False,
+        full_universe_result: Path,
         review_artifact: Path = DEFAULT_REVIEW) -> dict:
     database_root, query_manifest_path, default_mapping, default_run_ids, default_date = _defaults()
     compustat_root = database_root / "fundamentals/compustat"
@@ -466,12 +435,10 @@ def run(*, run_ids: list[str] | None = None, mapping_snapshot: Path | None = Non
         query_result["reused_existing_scope"] = False
     print(f"  materialization={query_result['materialization_id']} row_counts={query_result['row_counts']}", flush=True)
 
-    if refresh_sec:
-        raise ResolutionError("full-universe mode is archive-only; SEC evidence refresh is disabled")
     sec_refresh = None
     print("[3/5] Loading completed full-universe SEC decisions", flush=True)
     decisions_path, observations_path, cases = _full_universe_inputs(
-        full_universe_log, run_id=selected_runs[0], mapping_path=selected_mapping, cutoff=cutoff,
+        full_universe_result, run_id=selected_runs[0], mapping_path=selected_mapping, cutoff=cutoff,
     )
     cases = _apply_review_artifact(
         cases, decisions_path, review_artifact, run_id=selected_runs[0],
@@ -516,21 +483,17 @@ def main() -> None:
     parser.add_argument("--run-id", action="append", help="Completed Compustat source run; defaults to current query manifest.")
     parser.add_argument("--mapping-snapshot", type=Path, default=None)
     parser.add_argument("--mapping-date", type=date.fromisoformat, default=None)
-    parser.add_argument("--cutoff", default=DEFAULT_CUTOFF, help="Explicit timezone-aware resolution cutoff")
-    parser.add_argument("--full-universe-log", type=Path, default=FULL_UNIVERSE_JOB_LOG)
+    parser.add_argument("--cutoff", required=True, help="Explicit timezone-aware resolution cutoff")
+    parser.add_argument("--full-universe-result", type=Path, required=True,
+                        help="Processing-result JSON emitted by scripts.process_archived_sec_ocf_candidates")
     parser.add_argument("--review-artifact", type=Path, default=DEFAULT_REVIEW)
     parser.add_argument("--rebuild-query-scope", action="store_true", help="Replace derived development query tables if their scope changed.")
-    parser.add_argument(
-        "--refresh-sec-evidence", action="store_true",
-        help="Refresh SEC evidence for the configured cohort plus up to 10 discovered null periods.",
-    )
     args = parser.parse_args()
     try:
         result = run(run_ids=args.run_id, mapping_snapshot=args.mapping_snapshot,
                      mapping_date=args.mapping_date, cutoff=args.cutoff,
                      rebuild_query_scope=args.rebuild_query_scope,
-                     refresh_sec=args.refresh_sec_evidence,
-                     full_universe_log=args.full_universe_log,
+                     full_universe_result=args.full_universe_result,
                      review_artifact=args.review_artifact)
     except (ValueError, FileNotFoundError, ResolutionError) as exc:
         parser.error(str(exc))

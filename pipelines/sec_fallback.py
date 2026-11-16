@@ -2,7 +2,7 @@
 
 Extraction reads saved Company Facts and filing metadata. It does not fetch
 SEC data or write Compustat query tables; acceptance and resolution are
-separate reviewed steps. The AAT entry point remains as a compatibility wrapper.
+separate reviewed steps.
 """
 
 from __future__ import annotations
@@ -15,34 +15,6 @@ from typing import Any
 
 import polars as pl
 
-
-PILOT = {
-    "ticker": "AAT",
-    "cik": "0001500217",
-    "gvkey": "185549",
-    "barrid": "USAC121",
-    "membership_date": date(2026, 8, 31),
-    "mapping_snapshot_id": "5b1f0a0bbf5450a79c5594c61416d9d096e1b82e8e1c4a1a4e5b08675cdaf132",
-    "mapping_snapshot_path": (
-        "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/"
-        "security_mappings/membership_2026-08-31_"
-        "5b1f0a0bbf5450a79c5594c61416d9d096e1b82e8e1c4a1a4e5b08675cdaf132.parquet"
-    ),
-    "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
-    "cik_source": "comp.company.cik current metadata; not historically point-in-time",
-    "metric": "operating_cash_flow_ytd",
-    "taxonomy": "us-gaap",
-    "tag": "NetCashProvidedByUsedInOperatingActivities",
-    "unit": "USD",
-    "form": "10-Q",
-    "accession": "0001500217-26-000052",
-    "filing_date": date(2026, 10, 30),
-    "acceptance_timestamp": "2026-10-30T19:25:22.000Z",
-    "report_period": date(2026, 9, 30),
-    "period_start": date(2026, 1, 1),
-    "fiscal_year": 2026,
-    "fiscal_period": "Q3",
-}
 
 FALLBACK_SCHEMA = {
     "ticker": pl.String,
@@ -213,35 +185,6 @@ def extract_ocf_ytd_observation(
         "extraction_version": config.get("extraction_version", "operating_cash_flow_ytd_v1"),
     }
     return pl.DataFrame([row], schema=FALLBACK_SCHEMA)
-
-
-def extract_aat_q3_operating_cash_flow_ytd(
-    facts_payload: dict[str, Any],
-    filing: dict[str, Any],
-    *,
-    source_response_sha256: str,
-    submission_response_sha256: str,
-    extracted_at: str,
-) -> pl.DataFrame:
-    """Compatibility wrapper for the archived AAT extraction configuration."""
-    config = {
-        **PILOT,
-        "decision": "accept",
-        "identity_verified": True,
-        "scope_verified": True,
-        "extraction_version": "aat_q3_2026_operating_cash_flow_ytd_v1",
-    }
-    try:
-        return extract_ocf_ytd_observation(
-            facts_payload, filing, config=config,
-            source_response_sha256=source_response_sha256,
-            submission_response_sha256=submission_response_sha256,
-            extracted_at=extracted_at,
-        )
-    except SecFallbackValidationError as exc:
-        if "metadata differs from candidate config" in str(exc):
-            raise SecFallbackValidationError("SEC entity/filing metadata is outside the documented AAT pilot") from None
-        raise
 
 
 def sha256_file(path: str) -> str:

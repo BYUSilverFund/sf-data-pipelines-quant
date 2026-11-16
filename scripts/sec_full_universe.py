@@ -89,7 +89,7 @@ def load_or_create_discovery(
     quarterly = pl.read_parquet(quarterly_path)
     mapping_path = mapping_path.resolve()
     mapping = pl.read_parquet(mapping_path)
-    candidates = discover_additional_null_gaps(mapping, quarterly, limit=None, include_known=True)
+    candidates = discover_additional_null_gaps(mapping, quarterly, limit=None)
     unique_null_periods = quarterly.filter(pl.col("oancfy").is_null()).select("gvkey", "datadate").unique().height
     fiscal_key_columns = ["gvkey", "datadate", "fyearq"]
     fiscal_key_columns.extend(column for column in ("fqtr", "fyr", "curcdq", "currency") if column in quarterly.columns)

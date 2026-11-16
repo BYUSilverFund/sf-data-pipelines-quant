@@ -19,11 +19,21 @@ elif [[ $# -gt 0 ]]; then
     exit 2
 fi
 
-PROJECT=/home/gunnjake/projects/sf-data-pipelines-quant
+PROJECT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON="${FUNDAMENTALS_PYTHON_BIN:-$PROJECT/.venv-fips/bin/python}"
 START_DATE="${COMPUSTAT_START_DATE:-2024-01-01}"
 END_DATE="${COMPUSTAT_END_DATE:-$(date -u +%F)}"
 JOB_LABEL="${SLURM_JOB_ID:-manual-$(date -u +%Y%m%dT%H%M%SZ)}"
+REVIEW_ARTIFACT="${SEC_OCF_REVIEW_ARTIFACT:-$PROJECT/config/sec_ocf_full_universe_candidate_review_v1.json}"
+
+process_archived_evidence() {
+    local process_output
+    local collection_cutoff="${FUNDAMENTALS_COLLECTION_CUTOFF:-${CUTOFF%%T*}}"
+    process_output=$("$PYTHON" -m scripts.process_archived_sec_ocf_candidates \
+        --run-id "$RUN_ID" --collection-cutoff "$collection_cutoff")
+    FULL_UNIVERSE_RESULT=$(printf '%s\n' "$process_output" | "$PYTHON" -c 'import json,sys; print(json.load(sys.stdin)["processing_manifest"])')
+    [[ -f "$FULL_UNIVERSE_RESULT" ]] || { echo "Full-universe processing manifest is missing" >&2; return 1; }
+}
 
 cd "$PROJECT"
 mkdir -p "$PROJECT/logs"
@@ -76,11 +86,14 @@ PY
     MAPPING_SNAPSHOT="${run_values[1]}"
     MAPPING_DATE="${run_values[2]}"
     [[ "$RUN_ID" == "$RESUME_RUN_ID" ]] || { echo "Run ID validation failed" >&2; exit 1; }
-    CUTOFF="${FUNDAMENTALS_ACCEPTANCE_CUTOFF:-2026-10-29T23:59:59+00:00}"
+    CUTOFF="${FUNDAMENTALS_ACCEPTANCE_CUTOFF:?Set timezone-aware FUNDAMENTALS_ACCEPTANCE_CUTOFF}"
     printf 'Resuming saved Compustat run %s with its recorded mapping %s\n' "$RUN_ID" "$MAPPING_SNAPSHOT"
+    process_archived_evidence
     "$PYTHON" -u -m scripts.build_development_fundamentals \
         --run-id "$RUN_ID" --mapping-snapshot "$MAPPING_SNAPSHOT" \
-        --mapping-date "$MAPPING_DATE" --cutoff "$CUTOFF"
+        --mapping-date "$MAPPING_DATE" --cutoff "$CUTOFF" \
+        --full-universe-result "$FULL_UNIVERSE_RESULT" \
+        --review-artifact "$REVIEW_ARTIFACT"
     printf 'Development fundamentals saved-run workflow completed successfully.\n'
     exit 0
 fi
@@ -157,12 +170,15 @@ if completion.get("complete") is not True:
     raise SystemExit("Compustat completion audit did not pass")
 PY
 
-CUTOFF="${FUNDAMENTALS_ACCEPTANCE_CUTOFF:-2026-10-29T23:59:59+00:00}"
+CUTOFF="${FUNDAMENTALS_ACCEPTANCE_CUTOFF:?Set timezone-aware FUNDAMENTALS_ACCEPTANCE_CUTOFF}"
 printf 'Building development tables from %s with mapping %s and cutoff %s\n' \
     "$RUN_ID" "$MAPPING_SNAPSHOT" "$CUTOFF" | tee -a "$RUN_LOG"
+process_archived_evidence
 "$PYTHON" -u -m scripts.build_development_fundamentals \
     --run-id "$RUN_ID" --mapping-snapshot "$MAPPING_SNAPSHOT" \
     --mapping-date "$MAPPING_DATE" --cutoff "$CUTOFF" \
-    --rebuild-query-scope --refresh-sec-evidence 2>&1 | tee -a "$RUN_LOG"
+    --full-universe-result "$FULL_UNIVERSE_RESULT" \
+    --review-artifact "$REVIEW_ARTIFACT" \
+    --rebuild-query-scope 2>&1 | tee -a "$RUN_LOG"
 
 printf 'Development fundamentals refresh completed successfully.\n' | tee -a "$RUN_LOG"

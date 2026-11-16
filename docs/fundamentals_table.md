@@ -109,6 +109,38 @@ The descriptions below apply to both frequencies. A quarterly name ending in `q`
 
 For quarterly cash flow/dividend/investing fields ending in `y` (for example `oancfy`, `capxy`, `dltisy`), the source field is year-to-date. The table retains those source values; use care when comparing them to discrete-quarter income statement values.
 
+## Resolved quarterly table
+
+`fundamentals_quarterly_resolved_<scope>` is an immutable development view
+built from the quarterly Compustat table and explicit SEC review decisions.
+It retains every source column and row. The original `oancfy` is never
+overwritten; `original_oancfy` copies it and `resolved_oancfy` contains either
+that original value or an accepted SEC value for a source-null row. The
+`selected_source` value is `compustat`, `sec`, or `unresolved`.
+
+The resolved table keeps the same quarterly logical key as the Compustat
+quarterly table. SEC candidate reviews are at company-period level, but mapping
+expansion can produce more than one Barra row for a reviewed company-period.
+The resolved row count therefore remains tied to the original table and is not
+the accepted company-period count.
+
+| Field group | Fields | Meaning |
+|---|---|---|
+| Resolution | `original_oancfy`, `resolved_oancfy`, `selected_source`, `selection_reason` | Original value, selected value, source choice, and decision reason. |
+| SEC definition | `sec_value_raw`, `sec_unit`, `sec_currency`, `sec_taxonomy`, `sec_tag`, `sec_definition` | Raw SEC fact and its reported unit, currency, taxonomy, concept, and definition. |
+| SEC period | `sec_period_start`, `sec_period_end`, `sec_period_semantics`, `sec_fiscal_year`, `sec_fiscal_period` | Exact fiscal YTD duration and fiscal labels. SEC cash-flow YTD is converted into Compustat currency millions for `resolved_oancfy`; raw USD remains in `sec_value_raw`. |
+| Filing provenance | `sec_accession`, `sec_form`, `sec_filing_time`, `sec_acceptance_time`, `sec_source_url`, `sec_filing_archive_path` | Filing identity, public filing/acceptance times, URL, and archived filing location. |
+| Review and mapping provenance | `candidate_evidence_json`, `sec_mapping_provenance`, `sec_mapping_snapshot_path`, `sec_mapping_snapshot_sha256` | Serialized accepted review checks and mapping evidence. |
+| Source hashes | `sec_companyfacts_sha256`, `sec_submissions_sha256`, `sec_filing_html_sha256` | SHA-256 values for archived evidence used by the decision. |
+| Build provenance | `sec_extraction_id`, `sec_extraction_version`, `policy_version`, `policy_cutoff`, `policy_cutoff_basis` | Input/policy scope and explicit timezone-aware comparison cutoff. |
+
+Null `oancfy` values remain null unless a review passes issuer identity,
+consolidation scope, operating-cash-flow definition, exact YTD dates, unit and
+sign conversion, filing cutoff, amendment/conflict, and current-null checks.
+An unresolved or rejected review does not change the original Compustat
+value. Each scope has a manifest with input and yearly Parquet hashes; existing
+scope outputs are verified and never overwritten.
+
 ## Query with Polars
 
 Read the saved development tables through the project's `Database` helper. `read()` returns a lazy Polars frame; call `collect()` to load it:
@@ -180,6 +212,7 @@ This is an example calculation, not a precomputed table field. It uses the lates
 erDiagram
     ASSETS ||--o{ FUNDAMENTALS_ANNUAL : "barrid; align dates"
     ASSETS ||--o{ FUNDAMENTALS_QUARTERLY : "barrid; align dates"
+    FUNDAMENTALS_QUARTERLY ||--|| RESOLVED_QUARTERLY : "same quarterly logical key"
     FUNDAMENTALS_ANNUAL ||--o{ FUNDAMENTALS_QUARTERLY : "barrid + gvkey; compare fiscal periods"
 
     ASSETS {
@@ -205,6 +238,14 @@ erDiagram
         Int32 fqtr
         Float64 saleq
         Float64 niq
+    }
+    RESOLVED_QUARTERLY {
+        String barrid
+        String gvkey
+        Date datadate
+        Int32 fyearq
+        Float64 original_oancfy
+        Float64 resolved_oancfy
     }
 ```
 
