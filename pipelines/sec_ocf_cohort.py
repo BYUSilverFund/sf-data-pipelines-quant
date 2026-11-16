@@ -7,16 +7,72 @@ from decimal import Decimal, InvalidOperation
 from html.parser import HTMLParser
 from typing import Any
 
+import polars as pl
+
 
 OCF_TAG = "NetCashProvidedByUsedInOperatingActivities"
 OCF_TAXONOMY = "us-gaap"
 OCF_UNIT = "USD"
+
+# Metric semantics and accession policy are configuration, never inferred from
+# a concept label. The collector retains all accessions; the resolver requires
+# a separate reviewed decision before any row can be accepted.
+OCF_YTD_METRIC = {
+    "metric": "operating_cash_flow_ytd",
+    "taxonomy": OCF_TAXONOMY,
+    "tag": OCF_TAG,
+    "unit": OCF_UNIT,
+    "period_semantics": "fiscal_year_to_date",
+    "compustat_field": "oancfy",
+    "accepted_forms": ("10-Q", "10-Q/A"),
+    "amendment_policy": "an exact-fact 10-Q/A may supersede its original only after identity, scope, period, and filing-page verification; other accessions remain conflicts",
+}
+
+ACCEPTED = "accepted"
+LATE = "late"
+UNAVAILABLE = "unavailable"
+INCOMPATIBLE_STATUS = "incompatible"
+CONFLICTING = "conflicting"
+IDENTITY_REVIEW = "requiring_identity_review"
 
 VERIFIED_CANDIDATE = "Verified SEC fallback candidate"
 AFTER_CUTOFF = "Filing after the relevant cutoff"
 NO_DISCLOSURE = "No matching disclosure"
 INCOMPATIBLE = "Incompatible definition, period, or taxonomy"
 UNRESOLVED = "Unresolved"
+
+
+def discover_ocf_ytd_gaps(
+    compustat_rows,
+    identity_config: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Discover only null quarterly ``oancfy`` rows and attach identity gates.
+
+    ``identity_config`` is keyed by GVKEY and must separately establish the
+    mapping to CIK and continuity of accounting entity/consolidation scope.
+    Missing evidence is emitted as review work; it is never treated as a match.
+    """
+    rows = compustat_rows.filter(pl.col("oancfy").is_null())
+    candidates = []
+    for row in rows.iter_rows(named=True):
+        mapping = identity_config.get(str(row.get("gvkey")), {})
+        identity_verified = mapping.get("mapping_verified") is True and mapping.get("entity_verified") is True
+        scope_verified = mapping.get("consolidation_scope_verified") is True
+        candidates.append({
+            "gvkey": str(row.get("gvkey")), "barrid": row.get("barrid"),
+            "datadate": row.get("datadate"), "fyearq": row.get("fyearq"),
+            "fqtr": row.get("fqtr"), "fyr": row.get("fyr"),
+            "currency": row.get("currency"), "compustat_field": "oancfy",
+            "metric_definition": dict(OCF_YTD_METRIC),
+            "cik": mapping.get("cik"),
+            "identity_verified": identity_verified,
+            "consolidation_scope_verified": scope_verified,
+            "identity_evidence": mapping.get("identity_evidence"),
+            "scope_evidence": mapping.get("scope_evidence"),
+            "classification": IDENTITY_REVIEW if not (identity_verified and scope_verified) else "discovered",
+            "decision": "review_required" if not (identity_verified and scope_verified) else "not_yet_accepted",
+        })
+    return candidates
 
 
 def collect_ocf_ytd_observations(

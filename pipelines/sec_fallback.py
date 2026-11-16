@@ -1,8 +1,8 @@
-"""Bounded, provenance-preserving SEC fallback pilot.
+"""Reusable, configuration-driven SEC operating-cash-flow YTD extraction.
 
-This first pilot is intentionally limited to one AAT observation. It reads a
-previously saved Company Facts response and filing metadata; it never makes
-network requests or writes Compustat query tables.
+Extraction reads saved Company Facts and filing metadata. It does not fetch
+SEC data or write Compustat query tables; acceptance and resolution are
+separate reviewed steps. The AAT entry point remains as a compatibility wrapper.
 """
 
 from __future__ import annotations
@@ -97,24 +97,27 @@ def _valid_sha256(value: str) -> bool:
     return re.fullmatch(r"[0-9a-f]{64}", value or "") is not None
 
 
-def extract_aat_q3_operating_cash_flow_ytd(
+def extract_ocf_ytd_observation(
     facts_payload: dict[str, Any],
     filing: dict[str, Any],
     *,
+    config: dict[str, Any],
     source_response_sha256: str,
     submission_response_sha256: str,
     extracted_at: str,
 ) -> pl.DataFrame:
-    """Extract only the AAT FY2026 Q3 YTD operating-cash-flow observation.
+    """Extract one configured operating-cash-flow fiscal-YTD observation.
 
-    Values remain in the SEC-reported USD units (not Compustat USD millions).
-    No period subtraction, currency conversion, or quant-table substitution is
-    performed here.
+    ``config`` is a candidate specification, not evidence of acceptance. It
+    must identify the issuer, period, fiscal labels, metric definition, unit,
+    and verified mapping. Discovery code may produce configurations for
+    review; only configurations with ``decision='accept'`` and affirmative
+    identity and scope evidence can be extracted for resolution.
     """
-    if not _valid_sha256(source_response_sha256):
-        raise SecFallbackValidationError("source_response_sha256 must be a lowercase SHA-256")
-    if not _valid_sha256(submission_response_sha256):
-        raise SecFallbackValidationError("submission_response_sha256 must be a lowercase SHA-256")
+    for digest, label in ((source_response_sha256, "source_response_sha256"),
+                          (submission_response_sha256, "submission_response_sha256")):
+        if not _valid_sha256(digest):
+            raise SecFallbackValidationError(f"{label} must be a lowercase SHA-256")
     try:
         extracted_datetime = datetime.fromisoformat(extracted_at.replace("Z", "+00:00"))
     except (AttributeError, ValueError):
@@ -122,6 +125,31 @@ def extract_aat_q3_operating_cash_flow_ytd(
     if extracted_datetime.tzinfo is None or extracted_datetime.utcoffset() is None:
         raise SecFallbackValidationError("extracted_at must include a timezone")
 
+    required = {
+        "ticker", "cik", "gvkey", "barrid", "membership_date",
+        "mapping_snapshot_id", "mapping_snapshot_path", "mapping_source",
+        "cik_source", "decision", "identity_verified", "scope_verified",
+        "taxonomy", "tag", "unit", "accession", "form", "report_period",
+        "period_start", "fiscal_year", "fiscal_period",
+    }
+    missing = required - set(config)
+    if missing:
+        raise SecFallbackValidationError(f"candidate config missing fields: {sorted(missing)}")
+    if config["decision"] != "accept":
+        raise SecFallbackValidationError("candidate decision is not accept")
+    if config["identity_verified"] is not True or config["scope_verified"] is not True:
+        raise SecFallbackValidationError("accounting entity and consolidation scope are not verified")
+
+    cik = str(config["cik"]).zfill(10)
+    accession = str(config["accession"])
+    expected = {
+        "cik": cik,
+        "form": config["form"],
+        "accession": accession,
+        "filing_date": _iso_date(filing.get("filingDate")),
+        "acceptance_timestamp": filing.get("acceptanceDateTime"),
+        "report_period": _iso_date(filing.get("reportDate")),
+    }
     actual = {
         "cik": str(facts_payload.get("cik", "")).zfill(10),
         "form": filing.get("form"),
@@ -130,84 +158,90 @@ def extract_aat_q3_operating_cash_flow_ytd(
         "acceptance_timestamp": filing.get("acceptanceDateTime"),
         "report_period": _iso_date(filing.get("reportDate")),
     }
-    expected = {key: PILOT[key] for key in actual}
     if actual != expected:
-        raise SecFallbackValidationError(
-            f"SEC entity/filing metadata is outside the documented AAT pilot: {actual}"
-        )
+        raise SecFallbackValidationError(f"SEC entity/filing metadata differs from candidate config: {actual}")
 
-    concepts = (
-        facts_payload.get("facts", {})
-        .get(PILOT["taxonomy"], {})
-        .get(PILOT["tag"], {})
-        .get("units", {})
-        .get(PILOT["unit"], [])
-    )
+    facts = facts_payload.get("facts", {}).get(config["taxonomy"], {}).get(config["tag"], {})
+    observations = facts.get("units", {}).get(config["unit"], [])
     matches = [
-        obs
-        for obs in concepts
-        if obs.get("accn") == PILOT["accession"]
-        and _iso_date(obs.get("start")) == PILOT["period_start"]
-        and _iso_date(obs.get("end")) == PILOT["report_period"]
-        and obs.get("fy") == PILOT["fiscal_year"]
-        and obs.get("fp") == PILOT["fiscal_period"]
-        and obs.get("form") == PILOT["form"]
+        obs for obs in observations
+        if obs.get("accn") == accession
+        and _iso_date(obs.get("start")) == _iso_date(config["period_start"])
+        and _iso_date(obs.get("end")) == _iso_date(config["report_period"])
+        and obs.get("fy") == config["fiscal_year"]
+        and obs.get("fp") == config["fiscal_period"]
+        and obs.get("form") == config["form"]
     ]
     if len(matches) != 1:
-        raise SecFallbackValidationError(
-            "Expected exactly one exact-accession, exact-unit, exact-YTD-period "
-            f"fact; found {len(matches)}"
-        )
-
+        raise SecFallbackValidationError(f"expected one exact accession/unit/YTD fact; found {len(matches)}")
     observation = matches[0]
-    raw_value = observation.get("val")
     try:
-        numeric_value = float(Decimal(str(raw_value)))
+        numeric_value = float(Decimal(str(observation.get("val"))))
     except (InvalidOperation, TypeError, ValueError, OverflowError):
         raise SecFallbackValidationError("SEC fact val is not a finite numeric value") from None
-    if numeric_value != numeric_value or numeric_value in (float("inf"), float("-inf")):
+    if not numeric_value == numeric_value or numeric_value in (float("inf"), float("-inf")):
         raise SecFallbackValidationError("SEC fact val is not a finite numeric value")
-
     primary_document = str(filing.get("primaryDocument") or "").strip("/")
     if not primary_document or ".." in primary_document.split("/"):
-        raise SecFallbackValidationError("Filing metadata must include a safe primaryDocument")
-    source_url = (
-        "https://www.sec.gov/Archives/edgar/data/1500217/"
-        "000150021726000052/" + primary_document
-    )
+        raise SecFallbackValidationError("filing metadata must include a safe primaryDocument")
+
+    report_period = _iso_date(config["report_period"])
+    period_start = _iso_date(config["period_start"])
+    membership_date = _iso_date(config["membership_date"])
+    if None in (report_period, period_start, membership_date):
+        raise SecFallbackValidationError("candidate dates must be ISO calendar dates")
+    cik_int = str(int(cik))
+    accession_compact = accession.replace("-", "")
     row = {
-        "ticker": PILOT["ticker"],
-        "cik": PILOT["cik"],
-        "gvkey": PILOT["gvkey"],
-        "barrid": PILOT["barrid"],
-        "membership_date": PILOT["membership_date"],
-        "mapping_snapshot_id": PILOT["mapping_snapshot_id"],
-        "mapping_snapshot_path": PILOT["mapping_snapshot_path"],
-        "mapping_source": PILOT["mapping_source"],
-        "cik_source": PILOT["cik_source"],
-        "metric": PILOT["metric"],
-        "taxonomy": PILOT["taxonomy"],
-        "tag": PILOT["tag"],
-        "unit": PILOT["unit"],
-        "value_text": str(raw_value),
-        "value": numeric_value,
-        "period_start": PILOT["period_start"],
-        "period_end": PILOT["report_period"],
-        "period_semantics": "fiscal_year_to_date",
-        "fiscal_year": PILOT["fiscal_year"],
-        "fiscal_period": PILOT["fiscal_period"],
-        "form": PILOT["form"],
-        "accession": PILOT["accession"],
-        "filing_date": PILOT["filing_date"],
-        "acceptance_timestamp": filing.get("acceptanceDateTime"),
-        "source_url": source_url,
-        "source_api": "sec_companyfacts",
-        "source_response_sha256": source_response_sha256,
+        "ticker": config["ticker"], "cik": cik, "gvkey": str(config["gvkey"]),
+        "barrid": config["barrid"], "membership_date": membership_date,
+        "mapping_snapshot_id": config["mapping_snapshot_id"],
+        "mapping_snapshot_path": config["mapping_snapshot_path"],
+        "mapping_source": config["mapping_source"], "cik_source": config["cik_source"],
+        "metric": config.get("metric", "operating_cash_flow_ytd"),
+        "taxonomy": config["taxonomy"], "tag": config["tag"], "unit": config["unit"],
+        "value_text": str(observation.get("val")), "value": numeric_value,
+        "period_start": period_start, "period_end": report_period,
+        "period_semantics": "fiscal_year_to_date", "fiscal_year": int(config["fiscal_year"]),
+        "fiscal_period": config["fiscal_period"], "form": filing["form"],
+        "accession": accession, "filing_date": expected["filing_date"],
+        "acceptance_timestamp": filing["acceptanceDateTime"],
+        "source_url": f"https://www.sec.gov/Archives/edgar/data/{cik_int}/{accession_compact}/{primary_document}",
+        "source_api": "sec_companyfacts", "source_response_sha256": source_response_sha256,
         "submission_response_sha256": submission_response_sha256,
         "extracted_at": extracted_at,
-        "extraction_version": "aat_q3_2026_operating_cash_flow_ytd_v1",
+        "extraction_version": config.get("extraction_version", "operating_cash_flow_ytd_v1"),
     }
     return pl.DataFrame([row], schema=FALLBACK_SCHEMA)
+
+
+def extract_aat_q3_operating_cash_flow_ytd(
+    facts_payload: dict[str, Any],
+    filing: dict[str, Any],
+    *,
+    source_response_sha256: str,
+    submission_response_sha256: str,
+    extracted_at: str,
+) -> pl.DataFrame:
+    """Compatibility wrapper for the archived AAT extraction configuration."""
+    config = {
+        **PILOT,
+        "decision": "accept",
+        "identity_verified": True,
+        "scope_verified": True,
+        "extraction_version": "aat_q3_2026_operating_cash_flow_ytd_v1",
+    }
+    try:
+        return extract_ocf_ytd_observation(
+            facts_payload, filing, config=config,
+            source_response_sha256=source_response_sha256,
+            submission_response_sha256=submission_response_sha256,
+            extracted_at=extracted_at,
+        )
+    except SecFallbackValidationError as exc:
+        if "metadata differs from candidate config" in str(exc):
+            raise SecFallbackValidationError("SEC entity/filing metadata is outside the documented AAT pilot") from None
+        raise
 
 
 def sha256_file(path: str) -> str:

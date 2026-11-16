@@ -504,6 +504,20 @@ class Database:
             ids=fundamentals_table_keys("quarterly"),
         )
 
+    def fundamentals_quarterly_resolved_table(self, scope_id: str) -> Table:
+        """Open an immutable policy/input-scoped resolved quarterly table."""
+        import re
+        from pipelines.resolved_fundamentals import RESOLVED_COLUMNS
+
+        if not re.fullmatch(r"[0-9a-f]{64}", scope_id):
+            raise ValueError("scope_id must be a lowercase SHA-256")
+        return Table(
+            database=self._database_name,
+            name=f"fundamentals_quarterly_resolved_{scope_id[:16]}",
+            schema=fundamentals_table_schema("quarterly") | RESOLVED_COLUMNS,
+            ids=fundamentals_table_keys("quarterly"),
+        )
+
     @property
     def signals_table(self) -> Table:
         return Table(

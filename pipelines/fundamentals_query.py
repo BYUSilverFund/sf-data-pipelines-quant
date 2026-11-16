@@ -526,6 +526,52 @@ def _materialize_frames(
         compustat_root, _read_json(compustat_root / "source_extracts" / run_ids[0] / "run.json"),
         mapping_snapshot_path, mapping_date,
     )
+    # A prior complete materialization can serve as a value cache only when it
+    # used the same content-addressed mapping and report snapshot IDs. Snapshot
+    # pointers and report metadata are still checked below for every identity.
+    cached_rows: dict[str, dict[tuple[str, str, str], list[dict[str, Any]]]] = {
+        "annual": {}, "quarterly": {}
+    }
+    cached_versions: dict[str, dict[str, str]] = {"annual": {}, "quarterly": {}}
+    query_manifest_path = compustat_root.parent.parent / "compustat_query_manifest.json"
+    try:
+        prior = _read_json(query_manifest_path)
+        cache_ok = (
+            prior.get("build_status") == "complete"
+            and prior.get("target_database") == DatabaseName.DEVELOPMENT.value
+            and prior.get("mapping_snapshot_id") == mapping_snapshot_id
+            and prior.get("mapping_date") == mapping_date.isoformat()
+            and prior.get("filters") == FORMAT_FILTERS
+            and prior.get("extraction_version_policy") == "latest"
+            and prior.get("duplicate_key_check") == {"annual": "passed", "quarterly": "passed"}
+        )
+        if cache_ok:
+            prior_db = Database(DatabaseName.DEVELOPMENT)
+            for frequency, table in (
+                ("annual", prior_db.fundamentals_annual_table),
+                ("quarterly", prior_db.fundamentals_quarterly_table),
+            ):
+                prior_frame = table.read().collect()
+                if prior_frame.height != prior.get("row_counts", {}).get(frequency):
+                    cache_ok = False
+                    break
+                keys = fundamentals_table_keys(frequency)
+                if prior_frame.select(keys).unique().height != prior_frame.height:
+                    cache_ok = False
+                    break
+                version_map = prior.get("selected_report_versions", {}).get(frequency, {})
+                cached_versions[frequency] = version_map
+                for row in prior_frame.to_dicts():
+                    cache_key = (
+                        str(row["gvkey"]), str(row["datadate"]), str(row["source_snapshot_id"])
+                    )
+                    cached_rows[frequency].setdefault(cache_key, []).append(row)
+        if not cache_ok:
+            cached_rows = {"annual": {}, "quarterly": {}}
+            cached_versions = {"annual": {}, "quarterly": {}}
+    except (FileNotFoundError, ValueError, KeyError, pl.exceptions.PolarsError):
+        cached_rows = {"annual": {}, "quarterly": {}}
+        cached_versions = {"annual": {}, "quarterly": {}}
     relationships, mapping_exclusions = _collect_relationships(mapping, mapping_date, selected_gvkeys)
     all_rows: dict[str, list[dict[str, Any]]] = {"annual": [], "quarterly": []}
     selected_snapshot_ids: dict[str, set[str]] = {"annual": set(), "quarterly": set()}
@@ -543,6 +589,8 @@ def _materialize_frames(
     }
     input_source_counts = {}
     processed_identities: dict[str, set[str]] = {"annual": set(), "quarterly": set()}
+    report_value_cache_hits = {"annual": 0, "quarterly": 0}
+    report_value_reads = {"annual": 0, "quarterly": 0}
     duplicate_audits = {item[0]: item[4]["duplicate_audit"] for item in loaded_runs}
     quarantined_identities = [
         {"run_id": item[0], **quarantine}
@@ -570,6 +618,25 @@ def _materialize_frames(
                 snapshot_id, version_dir, report = _select_snapshot(identity_dir, frequency, row, version_policy)
                 selected_snapshot_ids[frequency].add(snapshot_id)
                 selected_report_versions[frequency][key] = snapshot_id
+                if cached_versions[frequency].get(key) == snapshot_id:
+                    date_key = str(row["datadate"])
+                    reusable = cached_rows[frequency].get((str(row["gvkey"]), date_key, snapshot_id), [])
+                    if reusable:
+                        report_years = report.get("fiscal_year")
+                        report_years = report_years if isinstance(report_years, list) else [report_years]
+                        cached_years = sorted({int(item["fyear"] if frequency == "annual" else item["fyearq"]) for item in reusable})
+                        if sorted({int(value) for value in report_years if value is not None}) != cached_years:
+                            raise ValueError(f"Cached query values disagree with report fiscal years for {key}")
+                        if frequency == "quarterly":
+                            report_quarters = report.get("fiscal_quarter")
+                            report_quarters = report_quarters if isinstance(report_quarters, list) else [report_quarters]
+                            cached_quarters = sorted({int(item["fqtr"]) for item in reusable})
+                            if sorted({int(value) for value in report_quarters if value is not None}) != cached_quarters:
+                                raise ValueError(f"Cached query values disagree with report fiscal quarters for {key}")
+                        all_rows[frequency].extend({**item, "_identity_key": key} for item in reusable)
+                        report_value_cache_hits[frequency] += 1
+                        continue
+                report_value_reads[frequency] += 1
                 report_period_rows = _read_report_values(version_dir, frequency, row)
                 year_field = "fyear" if frequency == "annual" else "fyearq"
                 observed_years = sorted({int(values[year_field]) for values, _ in report_period_rows if values.get(year_field) is not None})
@@ -682,6 +749,10 @@ def _materialize_frames(
             for frequency, frame in frames.items()
         },
         "format_exclusions": format_exclusions,
+        "report_value_cache": {
+            "reused_from_verified_query_scope": report_value_cache_hits,
+            "read_from_archived_statement_parquets": report_value_reads,
+        },
         "selected_source_snapshot_ids": {
             frequency: sorted(snapshot_ids) for frequency, snapshot_ids in selected_snapshot_ids.items()
         },

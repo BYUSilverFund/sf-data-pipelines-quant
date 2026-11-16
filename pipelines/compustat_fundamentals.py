@@ -471,19 +471,12 @@ def _store_periods(output_root: Path, frame: pl.DataFrame, frequency: str,
     paths: list[Path] = []
     if frame.is_empty():
         return rows, paths
-    period_keys = (
-        frame.select("gvkey", "datadate", "indfmt", "datafmt")
-        .unique()
-        .sort(["gvkey", "datadate", "indfmt", "datafmt"])
-        .to_dicts()
-    )
-    for key in period_keys:
-        period_frame = frame.filter(
-            (pl.col("gvkey") == key["gvkey"])
-            & (pl.col("datadate") == key["datadate"])
-            & (pl.col("indfmt") == key["indfmt"])
-            & (pl.col("datafmt") == key["datafmt"])
-        )
+    identity_columns = ["gvkey", "datadate", "indfmt", "datafmt"]
+    # Partition once; filtering the full annual/quarterly frame once per report
+    # makes the archive stage quadratic in the number of report identities.
+    period_partitions = frame.partition_by(identity_columns, as_dict=True)
+    for partition_key in sorted(period_partitions, key=lambda key: tuple(str(value) for value in key)):
+        period_frame = period_partitions[partition_key]
         row = period_frame.row(0, named=True)
         gvkey = str(row["gvkey"])
         datadate = row["datadate"]
@@ -564,14 +557,6 @@ def _store_periods(output_root: Path, frame: pl.DataFrame, frequency: str,
             except Exception:
                 shutil.rmtree(temporary, ignore_errors=True)
                 raise
-        identity.mkdir(parents=True, exist_ok=True)
-        # Canonical files always name the latest observed source version; old versions remain immutable.
-        for name in ("report.json", "balance_sheet.parquet", "income_statement.parquet", "cash_flow.parquet", "capital_metrics.parquet"):
-            source = version / name
-            target = identity / name
-            temporary = target.with_name(f".{target.name}.{os.getpid()}.tmp")
-            shutil.copyfile(source, temporary)
-            os.replace(temporary, target)
         latest_path = identity / "latest_snapshot.json"
         latest_id = None
         if latest_path.exists():
@@ -579,6 +564,25 @@ def _store_periods(output_root: Path, frame: pl.DataFrame, frequency: str,
                 latest_id = json.loads(latest_path.read_text()).get("snapshot_id")
             except (OSError, json.JSONDecodeError):
                 pass
+        identity.mkdir(parents=True, exist_ok=True)
+        canonical_names = (
+            "report.json", "balance_sheet.parquet", "income_statement.parquet",
+            "cash_flow.parquet", "capital_metrics.parquet",
+        )
+        # An unchanged latest snapshot already has canonical copies. Avoid
+        # rewriting five shared-filesystem artifacts for every unchanged report.
+        canonical_current = latest_id == content_id and all(
+            (identity / name).is_file() for name in canonical_names
+        )
+        if not canonical_current:
+            # Canonical files always name the latest observed source version;
+            # old immutable snapshot versions remain untouched.
+            for name in canonical_names:
+                source = version / name
+                target = identity / name
+                temporary = target.with_name(f".{target.name}.{os.getpid()}.tmp")
+                shutil.copyfile(source, temporary)
+                os.replace(temporary, target)
         if latest_id != content_id:
             _write_json(latest_path, {
                 "snapshot_id": content_id,
@@ -601,7 +605,10 @@ def run_compustat_fundamentals(source_database: str, limit: int | None,
         raise ClickException("ROOT and WRDS_USER must be configured in the environment")
     snapshot, _ = load_latest_russell_snapshot(root, source_database)
     out = Path(output_root) if output_root else Path(root) / "groups/grp_quant/database/fundamentals/compustat"
-    connection = wrds.Connection(wrds_username=user)
+    connection = wrds.Connection(
+        wrds_username=user,
+        wrds_password=os.getenv("WRDS_PASSWORD"),
+    )
     try:
         comp_candidates = fetch_compustat_security_candidates(connection, snapshot)
         mapping_base, barra_available = load_barra_security_candidates(root, source_database, snapshot)

@@ -1,0 +1,91 @@
+{
+  "artifact_sha256": "1daa467b760a53fc9d604d30bdab98b9d30c3911ceb86afa02285b35e832f3e8",
+  "artifact_version": "2026-11-bank-v1",
+  "cases": [
+    {
+      "company_name": "FIRST BANK",
+      "compustat_report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2026/gvkey_177009/quarterly_2026-09-30_INDL_STD/report.json",
+      "compustat_report_sha256": "44298870106d29830778b9d1327aca1f4ac855973f83ff974e11b588fd9c09a8",
+      "conflicts_or_limits": [
+        "The saved Compustat/Barra CUSIP relationship has no SEC CIK; ticker/CUSIP do not justify inventing one.",
+        "No Q3 2026 Form 10-Q was retrieved or reviewed, so the row’s financial value and report-scope reconciliation are not verified for fallback.",
+        "Do not use a parent-company filing or the earnings release as a substitute for the exact quarterly filing."
+      ],
+      "disposition": "issuer_identity_resolved_as_fdic_exchange_act_filer; SEC_CIK_unavailable; keep excluded from the SEC-EDGAR-only workflow pending an approved FDIC-source workflow and exact-period filing review.",
+      "filing_history": "First Bank files Exchange Act periodic reports through the FDIC Securities Exchange Act Filings system, not SEC EDGAR. A Q3 2025 Form 10-Q filed with the FDIC is available in its report history. The issuer published Q3 2026 results on 2026-10-22; as of the review date, a Q3 2026 Form 10-Q document was not located in the accessible archive.",
+      "gvkey": "177009",
+      "identity_analysis": "Strongly resolved to the publicly traded First Bank headquartered in Hamilton, NJ: exact Compustat CUSIP/IID and Barra relationship; issuer IR identifies First Bank as a New Jersey-chartered bank whose common stock trades as FRBA; its Form 10-Q cover identifies the same legal name, address, ticker, and FDIC certificate. No parent-company mapping is needed or supported; the issuer itself reports consolidated statements including wholly owned subsidiaries.",
+      "original_exclusion_reason": "no_unique_mapped_current_cik_metadata",
+      "resolved_table_label": "FDIC filer; separate source required.",
+      "security_identifiers": {
+        "barra_id": "USBBML1",
+        "cusip9": "31931U102",
+        "ein": "20-8164471",
+        "fdic_certificate": "58481",
+        "ffiec_rssd": "3401970",
+        "iid": "01",
+        "legal_name": "First Bank",
+        "location": "Hamilton, New Jersey",
+        "ticker": "FRBA"
+      },
+      "sources": [
+        "https://frba.q4ir.com/overview/default.aspx",
+        "https://frba.q4ir.com/news/news-details/2026/First-Bank-Announces-Third-Quarter-2026-Net-Income-of-12-2Million/default.aspx",
+        "https://s206.q4cdn.com/450111087/files/doc_downloads/2025/11/10/FRBA_10Q-Q32025.pdf",
+        "https://efr.fdic.gov/fcxweb/efr/index.html",
+        "https://banks.data.fdic.gov/bankfind-suite/bankfind?cert=58481"
+      ]
+    },
+    {
+      "company_name": "TOWNEBANK",
+      "compustat_report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2026/gvkey_120318/quarterly_2026-09-30_INDL_STD/report.json",
+      "compustat_report_sha256": "b4b5ee892554b97d67c070afa14edc5b8b83bef2ce29c0f5af68331c056bcb4d",
+      "conflicts_or_limits": [
+        "The saved Compustat/Barra CUSIP relationship has no SEC CIK; ticker/CUSIP do not justify inventing one.",
+        "The TowneBank 10-Q has consolidated scope across multiple operating segments; a future exact metric extraction must match that scope to the Compustat row.",
+        "No financial value was extracted or accepted in this identity review."
+      ],
+      "disposition": "issuer_identity_resolved_as_fdic_exchange_act_filer; SEC_CIK_unavailable; keep excluded from the SEC-EDGAR-only workflow pending an approved FDIC-source workflow and exact-period scope review.",
+      "filing_history": "TowneBank publishes Exchange Act reports through the FDIC Securities Exchange Act Filings system, not SEC EDGAR. Its investor-relations filing page listed the Q3 2026 10-Q on 2026-11-04. The FDIC system explains it hosts periodic reports and other Exchange Act disclosures by FDIC-supervised institutions.",
+      "gvkey": "120318",
+      "identity_analysis": "Strongly resolved to TowneBank itself: exact Compustat CUSIP/IID and Barra relationship; its Form 8-K identifies TowneBank as the registrant, ticker TOWN, FDIC certificate 35095, and EIN 54-1910608. No parent-company mapping is needed. TowneBank reports a consolidated financial group across banking, mortgage, resort/vacation, and insurance operations; that group scope must be retained if its filing is used.",
+      "original_exclusion_reason": "no_unique_mapped_current_cik_metadata",
+      "resolved_table_label": "FDIC filer; separate source required.",
+      "security_identifiers": {
+        "barra_id": "USA2NT1",
+        "cusip9": "89214P109",
+        "ein": "54-1910608",
+        "fdic_certificate": "35095",
+        "iid": "01",
+        "legal_name": "TowneBank",
+        "location": "Portsmouth, Virginia",
+        "ticker": "TOWN"
+      },
+      "sources": [
+        "https://investor.townebank.com/financials/filing-documents/default.aspx",
+        "https://investor.townebank.com/overview/",
+        "https://s201.q4cdn.com/520199522/files/doc_downloads/sec_filings/other_filings/8K/2025/08/8K-TowneBank-and-Dogwood-Bank-Merger-Agreement.pdf",
+        "https://efr.fdic.gov/fcxweb/efr/index.html",
+        "https://banks.data.fdic.gov/bankfind-suite/bankfind?cert=35095"
+      ]
+    }
+  ],
+  "counts": {
+    "SEC_CIK_resolved": 0,
+    "financial_values_accepted": 0,
+    "issuer_identity_resolved": 2,
+    "unresolved_for_SEC_EDGAR_fallback": 2
+  },
+  "financial_values_accepted": 0,
+  "period": {
+    "currency": "USD",
+    "datadate": "2026-09-30",
+    "fqtr": 3,
+    "fyearq": 2026,
+    "fyr": 12
+  },
+  "purpose": "Review of the two 2026-09-30 periods previously excluded from SEC EDGAR discovery for missing CIK; preserve original discovery and financial snapshots.",
+  "review_date": "2026-11-11",
+  "source_run_id": "run_e906597c98025ac25cdf006d",
+  "workflow_effect": "No original snapshot changed. The 12 resolved exclusions remain skipped. These two rows are identified as FDIC Exchange Act filers but are not added to SEC EDGAR candidate inputs."
+}

@@ -9,6 +9,7 @@ from pipelines.sec_fallback import (
     PILOT,
     SecFallbackValidationError,
     extract_aat_q3_operating_cash_flow_ytd,
+    extract_ocf_ytd_observation,
 )
 
 
@@ -127,6 +128,46 @@ class SecFallbackPilotTests(unittest.TestCase):
             ]
         )
         self.assertEqual(self.extract(payload=payload).get_column("value").to_list(), [129807000.0])
+
+    def test_configured_extractor_supports_another_company_and_keeps_ytd_units(self) -> None:
+        config = {
+            "ticker": "TEST", "cik": "0000001234", "gvkey": "000123",
+            "barrid": "USATEST1", "membership_date": date(2026, 8, 31),
+            "mapping_snapshot_id": "d" * 64, "mapping_snapshot_path": "mapping.parquet",
+            "mapping_source": "verified test mapping", "cik_source": "verified SEC entity",
+            "decision": "accept", "identity_verified": True, "scope_verified": True,
+            "metric": "operating_cash_flow_ytd", "taxonomy": "us-gaap",
+            "tag": "NetCashProvidedByUsedInOperatingActivities", "unit": "USD",
+            "accession": "0000001234-26-000001", "form": "10-Q",
+            "period_start": date(2026, 1, 1), "report_period": date(2026, 9, 30),
+            "fiscal_year": 2026, "fiscal_period": "Q3",
+        }
+        facts = {"cik": 1234, "facts": {"us-gaap": {
+            "NetCashProvidedByUsedInOperatingActivities": {"units": {"USD": [{
+                "accn": config["accession"], "start": "2026-01-01", "end": "2026-09-30",
+                "val": 123456789, "fy": 2026, "fp": "Q3", "form": "10-Q",
+            }]}}
+        }}}
+        filing = {"accessionNumber": config["accession"], "form": "10-Q",
+                  "filingDate": "2026-10-28", "acceptanceDateTime": "2026-10-28T12:00:00Z",
+                  "reportDate": "2026-09-30", "primaryDocument": "test.htm"}
+        row = extract_ocf_ytd_observation(
+            facts, filing, config=config, source_response_sha256="a" * 64,
+            submission_response_sha256="b" * 64, extracted_at="2026-11-01T00:00:00Z",
+        ).row(0, named=True)
+        self.assertEqual(row["gvkey"], "000123")
+        self.assertEqual(row["value"], 123456789)
+        self.assertEqual(row["period_semantics"], "fiscal_year_to_date")
+        self.assertIn("/1234/000000123426000001/test.htm", row["source_url"])
+
+    def test_configured_extractor_requires_identity_and_scope_acceptance(self) -> None:
+        config = {**PILOT, "decision": "accept", "identity_verified": False,
+                  "scope_verified": True}
+        with self.assertRaisesRegex(SecFallbackValidationError, "entity and consolidation scope"):
+            extract_ocf_ytd_observation(
+                {}, {}, config=config, source_response_sha256="a" * 64,
+                submission_response_sha256="b" * 64, extracted_at="2026-11-01T00:00:00Z",
+            )
 
     def test_rejects_bad_hash_and_unsafe_source_document(self) -> None:
         with self.assertRaisesRegex(SecFallbackValidationError, "SHA-256"):

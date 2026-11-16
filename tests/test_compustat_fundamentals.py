@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import polars as pl
 from click.testing import CliRunner
@@ -139,6 +140,21 @@ class CompustatFundamentalsTests(unittest.TestCase):
             _store_periods(root, changed, "quarterly", {}, "2026-10-30T12:00:00+00:00", {}, [])
             self.assertEqual(len(list((report_dir / "snapshots").iterdir())), 2)
             self.assertEqual(pl.read_parquet(report_dir / "income_statement.parquet")["saleq"][0], 88.0)
+
+    def test_unchanged_period_skips_canonical_shared_filesystem_copies(self):
+        frame = pl.DataFrame([{
+            "gvkey": "000001", "datadate": date(2026, 3, 31), "fyearq": 2026,
+            "fqtr": 1, "fyr": 12, "currency": "USD", "rdq": None,
+            "indfmt": "INDL", "consol": "C", "popsrc": "D", "datafmt": "STD",
+            "atq": 120.0, "saleq": 42.0,
+        }])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            args = (root, frame, "quarterly", {}, "2026-10-28T12:00:00+00:00", {}, [])
+            _store_periods(*args)
+            with patch("pipelines.compustat_fundamentals.shutil.copyfile", side_effect=AssertionError):
+                count, _ = _store_periods(*args)
+            self.assertEqual(count, 1)
 
     def test_report_identity_separates_format_rows_with_the_same_period_key(self):
         frame = pl.DataFrame([

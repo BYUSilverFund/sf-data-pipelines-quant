@@ -1,0 +1,1743 @@
+{
+  "artifact_version": "2026-11-v2",
+  "case_reviews": [
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USBNYL1"
+          ],
+          "barrid": "USBNYL1",
+          "cik": "0001828588",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2024-03-31",
+          "fqtr": 2,
+          "fyearq": 2024,
+          "fyr": 9,
+          "gvkey": "041241",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2025-06-29",
+              "barrid": "USBNYL1",
+              "cik": "0001828588",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2025-06-30",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "410709109",
+              "iid": "01",
+              "issuerid": "134832",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USBNYL1"
+            }
+          ],
+          "rdq": "2024-04-17",
+          "ticker": null
+        }
+      ],
+      "company_name": "HANOVER BANCORP INC",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2024-03-31",
+          "fqtr": 2,
+          "fyearq": 2024,
+          "fyr": 9,
+          "gvkey": "041241",
+          "oancfy": null,
+          "rdq": "2024-04-17"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2024-03-31",
+          "fqtr": 1,
+          "fyearq": 2024,
+          "fyr": 12,
+          "gvkey": "041241",
+          "oancfy": 3.595,
+          "rdq": "2024-04-17"
+        }
+      ],
+      "conflicting_data": [
+        "The excluded FY2024 Q2/FYR9 null row implies a six-month fiscal YTD from October 2023 through March 2024, which does not match the SEC filing’s three-month period.",
+        "CUSIP 410709109 / IID 01 / Barra USBNYL1 mapping starts in June 2025, after the report date."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; preserve the existing three-month non-null row and do not use the mismatched six-month period.",
+      "gvkey": "041241",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2024-03-31",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          1,
+          2
+        ],
+        "fiscal_year": 2024,
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2024/gvkey_041241/quarterly_2024-03-31_INDL_STD/report.json",
+        "report_json_sha256": "055ed90c7e2d9db29c116bd6858ee98cba2a318c2ce33da2a7a8460e945087cc"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/1828588/000155837024008127/hnvr-20240331x10q.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USBNYL1"
+        ],
+        "ciks": [
+          "0001828588"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2025-06-29",
+            "barrid": "USBNYL1",
+            "cik": "0001828588",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2025-06-30",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "410709109",
+            "iid": "01",
+            "issuerid": "134832",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USBNYL1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "The saved extract has a non-null FY2024 Q1/FYR12 OANCFY value of 3.595 for 2024-03-31.",
+        "A SEC 10-Q for Hanover Bancorp CIK 0001828588 reports the three months ended March 31, 2024."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USBD8Q1"
+          ],
+          "barrid": "USBD8Q1",
+          "cik": "0000810332",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-03-31",
+          "fqtr": 1,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "033962",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2025-11-25",
+              "barrid": "USBD8Q1",
+              "cik": "0000810332",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2025-11-25",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "590479408",
+              "iid": "01",
+              "issuerid": "124261",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USBD8Q1"
+            }
+          ],
+          "rdq": "2025-05-20",
+          "ticker": null
+        }
+      ],
+      "company_name": "REPUBLIC AIRWAYS HLDINGS INC",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-03-31",
+          "fqtr": 2,
+          "fyearq": 2025,
+          "fyr": 9,
+          "gvkey": "033962",
+          "oancfy": -33.951,
+          "rdq": "2025-05-20"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-03-31",
+          "fqtr": 1,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "033962",
+          "oancfy": null,
+          "rdq": "2025-05-20"
+        }
+      ],
+      "conflicting_data": [
+        "Both null rows are dated before the merger and before the Compustat/Barra mapping effective date of November 25, 2025. The CIK was used by pre-merger Mesa Air Group, so a shared CIK does not establish that those filings report the Republic accounting entity in the Compustat rows.",
+        "The corresponding same-date rows use different fiscal calendars (FYR12 null versus FYR9 non-null)."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; pre-merger Mesa filings cannot be used as Republic accounting-scope fallback evidence.",
+      "gvkey": "033962",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2025-03-31",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          1,
+          2
+        ],
+        "fiscal_year": 2025,
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2025/gvkey_033962/quarterly_2025-03-31_INDL_STD/report.json",
+        "report_json_sha256": "7d4c74f76d25e09b88a5ece6f7aaa86e91d231efeeb6b22ad52b265a08a519e5"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/810332/000095017025075201/mesa-20250331.htm",
+        "https://www.sec.gov/Archives/edgar/data/2098/000095017025108021/mesa-20250630.htm",
+        "https://www.sec.gov/Archives/edgar/data/810332/000162828026051405/rjet-20260630.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USBD8Q1"
+        ],
+        "ciks": [
+          "0000810332"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2025-11-25",
+            "barrid": "USBD8Q1",
+            "cik": "0000810332",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2025-11-25",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "590479408",
+            "iid": "01",
+            "issuerid": "124261",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USBD8Q1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "The saved rows have matching report dates and CIK 0000810332; the security identifiers are CUSIP 590479408 / IID 01 / Barra USBD8Q1.",
+        "SEC records describe the November 25, 2025 merger in which Republic Airways merged into Mesa Air Group; the surviving Mesa entity was renamed Republic Airways Holdings."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USA17M1"
+          ],
+          "barrid": "USA17M1",
+          "cik": "0000929351",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-03-31",
+          "fqtr": 1,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "051514",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2025-05-07",
+              "barrid": "USA17M1",
+              "cik": "0000929351",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2025-04-14",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "855919106",
+              "iid": "01",
+              "issuerid": "A02270",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USA17M1"
+            }
+          ],
+          "rdq": "2025-06-26",
+          "ticker": null
+        }
+      ],
+      "company_name": "STARZ ENTERTAINMENT CORP",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-03-31",
+          "fqtr": 4,
+          "fyearq": 2024,
+          "fyr": 3,
+          "gvkey": "051514",
+          "oancfy": -46.0,
+          "rdq": "2025-06-26"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-03-31",
+          "fqtr": 1,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "051514",
+          "oancfy": null,
+          "rdq": "2025-06-26"
+        }
+      ],
+      "conflicting_data": [
+        "The null FYR=12 rows start their fiscal YTD at January 1, whereas the SEC transition period begins April 1; the March 31 case also predates the Starz security mapping effective date (Compustat 2025-04-14, Barra 2025-05-07).",
+        "CUSIP 855919106 / IID 01 / Barra USA17M1 and current CIK 0000929351 are not enough to override the period and separation mismatch."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; the FYR=12 rows are not eligible replacements for the existing FYR=3 periods.",
+      "gvkey": "051514",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2025-03-31",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          1,
+          4
+        ],
+        "fiscal_year": [
+          2024,
+          2025
+        ],
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2025/gvkey_051514/quarterly_2025-03-31_INDL_STD/report.json",
+        "report_json_sha256": "a9dc51b1deb98472134d4d882ace504fcb8ae75ba90d32d00f8236cc3d47f94f"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/929351/000119312525114510/d864362d8k.htm",
+        "https://www.sec.gov/Archives/edgar/data/929351/000092935125000103/starz-20250630.htm",
+        "https://www.sec.gov/Archives/edgar/data/929351/000092935126000011/starz-20251231.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USA17M1"
+        ],
+        "ciks": [
+          "0000929351"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2025-05-07",
+            "barrid": "USA17M1",
+            "cik": "0000929351",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2025-04-14",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "855919106",
+            "iid": "01",
+            "issuerid": "A02270",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USA17M1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "SEC filings identify the May 6, 2025 Starz separation from Lions Gate and a transition year from April 1 through December 31, 2025 after changing year-end from March 31 to December 31.",
+        "At all four dates the source has a separate non-null FYR=3 row (-46.0, 65.4, 39.3, 17.9 respectively), consistent with the pre-change/transition reporting periods."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USBD8Q1"
+          ],
+          "barrid": "USBD8Q1",
+          "cik": "0000810332",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-06-30",
+          "fqtr": 2,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "033962",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2025-11-25",
+              "barrid": "USBD8Q1",
+              "cik": "0000810332",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2025-11-25",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "590479408",
+              "iid": "01",
+              "issuerid": "124261",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USBD8Q1"
+            }
+          ],
+          "rdq": "2025-08-13",
+          "ticker": null
+        }
+      ],
+      "company_name": "REPUBLIC AIRWAYS HLDINGS INC",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-06-30",
+          "fqtr": 2,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "033962",
+          "oancfy": null,
+          "rdq": "2025-08-13"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-06-30",
+          "fqtr": 3,
+          "fyearq": 2025,
+          "fyr": 9,
+          "gvkey": "033962",
+          "oancfy": -43.346,
+          "rdq": "2025-08-13"
+        }
+      ],
+      "conflicting_data": [
+        "Both null rows are dated before the merger and before the Compustat/Barra mapping effective date of November 25, 2025. The CIK was used by pre-merger Mesa Air Group, so a shared CIK does not establish that those filings report the Republic accounting entity in the Compustat rows.",
+        "The corresponding same-date rows use different fiscal calendars (FYR12 null versus FYR9 non-null)."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; pre-merger Mesa filings cannot be used as Republic accounting-scope fallback evidence.",
+      "gvkey": "033962",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2025-06-30",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          2,
+          3
+        ],
+        "fiscal_year": 2025,
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2025/gvkey_033962/quarterly_2025-06-30_INDL_STD/report.json",
+        "report_json_sha256": "1be7bf9cff5fef9068406a48bcb35eaff291ec86f7a00a2e1f6cec55dd307ef9"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/810332/000095017025075201/mesa-20250331.htm",
+        "https://www.sec.gov/Archives/edgar/data/2098/000095017025108021/mesa-20250630.htm",
+        "https://www.sec.gov/Archives/edgar/data/810332/000162828026051405/rjet-20260630.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USBD8Q1"
+        ],
+        "ciks": [
+          "0000810332"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2025-11-25",
+            "barrid": "USBD8Q1",
+            "cik": "0000810332",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2025-11-25",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "590479408",
+            "iid": "01",
+            "issuerid": "124261",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USBD8Q1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "The saved rows have matching report dates and CIK 0000810332; the security identifiers are CUSIP 590479408 / IID 01 / Barra USBD8Q1.",
+        "SEC records describe the November 25, 2025 merger in which Republic Airways merged into Mesa Air Group; the surviving Mesa entity was renamed Republic Airways Holdings."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USA17M1"
+          ],
+          "barrid": "USA17M1",
+          "cik": "0000929351",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-06-30",
+          "fqtr": 2,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "051514",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2025-05-07",
+              "barrid": "USA17M1",
+              "cik": "0000929351",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2025-04-14",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "855919106",
+              "iid": "01",
+              "issuerid": "A02270",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USA17M1"
+            }
+          ],
+          "rdq": "2025-08-14",
+          "ticker": null
+        }
+      ],
+      "company_name": "STARZ ENTERTAINMENT CORP",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-06-30",
+          "fqtr": 2,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "051514",
+          "oancfy": null,
+          "rdq": "2025-08-14"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-06-30",
+          "fqtr": 1,
+          "fyearq": 2025,
+          "fyr": 3,
+          "gvkey": "051514",
+          "oancfy": 65.4,
+          "rdq": "2025-08-14"
+        }
+      ],
+      "conflicting_data": [
+        "The null FYR=12 rows start their fiscal YTD at January 1, whereas the SEC transition period begins April 1; the March 31 case also predates the Starz security mapping effective date (Compustat 2025-04-14, Barra 2025-05-07).",
+        "CUSIP 855919106 / IID 01 / Barra USA17M1 and current CIK 0000929351 are not enough to override the period and separation mismatch."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; the FYR=12 rows are not eligible replacements for the existing FYR=3 periods.",
+      "gvkey": "051514",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2025-06-30",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          1,
+          2
+        ],
+        "fiscal_year": 2025,
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2025/gvkey_051514/quarterly_2025-06-30_INDL_STD/report.json",
+        "report_json_sha256": "b128e6cc28d8137a635d4c223d2f7f0ff170482ae20b5542d94fbe30c1d445b3"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/929351/000119312525114510/d864362d8k.htm",
+        "https://www.sec.gov/Archives/edgar/data/929351/000092935125000103/starz-20250630.htm",
+        "https://www.sec.gov/Archives/edgar/data/929351/000092935126000011/starz-20251231.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USA17M1"
+        ],
+        "ciks": [
+          "0000929351"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2025-05-07",
+            "barrid": "USA17M1",
+            "cik": "0000929351",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2025-04-14",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "855919106",
+            "iid": "01",
+            "issuerid": "A02270",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USA17M1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "SEC filings identify the May 6, 2025 Starz separation from Lions Gate and a transition year from April 1 through December 31, 2025 after changing year-end from March 31 to December 31.",
+        "At all four dates the source has a separate non-null FYR=3 row (-46.0, 65.4, 39.3, 17.9 respectively), consistent with the pre-change/transition reporting periods."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USBDKC1"
+          ],
+          "barrid": "USBDKC1",
+          "cik": "0001370053",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-09-30",
+          "fqtr": 1,
+          "fyearq": 2026,
+          "fyr": 6,
+          "gvkey": "026162",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2017-01-26",
+              "barrid": "USBDKC1",
+              "cik": "0001370053",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2015-09-09",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "032724106",
+              "iid": "01",
+              "issuerid": "116599",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USBDKC1"
+            }
+          ],
+          "rdq": "2025-11-04",
+          "ticker": null
+        }
+      ],
+      "company_name": "ANAPTYSBIO INC",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-09-30",
+          "fqtr": 3,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "026162",
+          "oancfy": -78.3,
+          "rdq": "2025-11-04"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-09-30",
+          "fqtr": 1,
+          "fyearq": 2026,
+          "fyr": 6,
+          "gvkey": "026162",
+          "oancfy": null,
+          "rdq": "2025-11-04"
+        }
+      ],
+      "conflicting_data": [
+        "The three null rows carry FYR=6 labels dated before that effective reporting change; they represent alternative periods without a matching contemporaneous SEC fiscal calendar.",
+        "The mapping is CUSIP 032724106 / IID 01 / Barra USBDKC1 and its Compustat and Barra intervals cover the dates, but those links do not validate the alternative fiscal labels."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; the null FYR=6 row is not an eligible gap. Preserve the non-null FYR=12 row.",
+      "gvkey": "026162",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2025-09-30",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          1,
+          3
+        ],
+        "fiscal_year": [
+          2025,
+          2026
+        ],
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2025/gvkey_026162/quarterly_2025-09-30_INDL_STD/report.json",
+        "report_json_sha256": "a625375ea67fc701075144a24874028ebd0a5c42323e203c00e07e55a02a906c"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/1370053/000137005325000089/anab-20250930.htm",
+        "https://www.sec.gov/Archives/edgar/data/1370053/000119312526088290/anab-20251231.htm",
+        "https://www.sec.gov/Archives/edgar/data/1370053/000119312526219515/anab-20260331.htm",
+        "https://www.sec.gov/Archives/edgar/data/1370053/000119312526396690/anab-ex99_1.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USBDKC1"
+        ],
+        "ciks": [
+          "0001370053"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2017-01-26",
+            "barrid": "USBDKC1",
+            "cik": "0001370053",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2015-09-09",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "032724106",
+            "iid": "01",
+            "issuerid": "116599",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USBDKC1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "The same dates have a separate FYR=12 row with non-null OANCFY: 2025-09-30=-78.300, 2025-12-31=19.697, 2026-03-31=-25.919.",
+        "SEC filings continue to report the December 31 year-end through the 2025 annual period; AnaptysBio disclosed on May 18, 2026 that it changed year-end to June 30, with new-year quarterly reports beginning at September 30, 2026."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USBR571"
+          ],
+          "barrid": "USBR571",
+          "cik": "0002078856",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-09-30",
+          "fqtr": 4,
+          "fyearq": 2025,
+          "fyr": 9,
+          "gvkey": "036356",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2025-12-03",
+              "barrid": "USBR571",
+              "cik": "0002078856",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2025-12-03",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "44916Y106",
+              "iid": "01",
+              "issuerid": "142998",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USBR571"
+            }
+          ],
+          "ticker": null
+        },
+        {
+          "additional_barrids": [
+            "USBR571"
+          ],
+          "barrid": "USBR571",
+          "cik": "0002078856",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-09-30",
+          "fqtr": 1,
+          "fyearq": 2026,
+          "fyr": 6,
+          "gvkey": "036356",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2025-12-03",
+              "barrid": "USBR571",
+              "cik": "0002078856",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2025-12-03",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "44916Y106",
+              "iid": "01",
+              "issuerid": "142998",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USBR571"
+            }
+          ],
+          "ticker": null
+        }
+      ],
+      "company_name": "HYPERLIQUID STRATEGIES INC",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-09-30",
+          "fqtr": 4,
+          "fyearq": 2025,
+          "fyr": 9,
+          "gvkey": "036356",
+          "oancfy": null,
+          "rdq": null
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-09-30",
+          "fqtr": 1,
+          "fyearq": 2026,
+          "fyr": 6,
+          "gvkey": "036356",
+          "oancfy": null,
+          "rdq": null
+        }
+      ],
+      "conflicting_data": [
+        "Both Compustat rows are null at 2025-09-30: FY2025 Q4/FYR9 implies YTD from 2024-10-01; FY2026 Q1/FYR6 implies YTD from 2025-04-01. The SEC cash-flow duration starts at incorporation on 2025-07-02, so neither row matches.",
+        "The filing issuer name, CIK and period-end date match, but the reporting scope is the pre-merger formation entity; the later Sonnet consolidation and security mapping postdate the report."
+      ],
+      "disposition": "resolved_exclude_both_fiscal_row_candidates_from_sec_fallback; SEC 10-Q covers the end date but reports inception-to-date cash flows for a pre-merger shell-period scope, matching neither Compustat fiscal YTD duration. Do not accept its zero value.",
+      "gvkey": "036356",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2025-09-30",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          1,
+          4
+        ],
+        "fiscal_year": [
+          2025,
+          2026
+        ],
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2025/gvkey_036356/quarterly_2025-09-30_INDL_STD/report.json",
+        "report_json_sha256": "1ec3e984e7624a1a9bb3373224bfa5d17eb57d34b1943d1dae34f762ff861a98"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/2078856/000119312525311400/d47504d10q.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USBR571"
+        ],
+        "ciks": [
+          "0002078856"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2025-12-03",
+            "barrid": "USBR571",
+            "cik": "0002078856",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2025-12-03",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "44916Y106",
+            "iid": "01",
+            "issuerid": "142998",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USBR571"
+          }
+        ]
+      },
+      "supporting_data": [
+        "The saved SEC 10-Q (CIK 0002078856, accession 0001193125-25-311400, filed 2025-12-08) identifies Hyperliquid Strategies Inc and covers the quarter ended 2025-09-30.",
+        "Its cash-flow statement covers July 2, 2025 (inception) through September 30, 2025 and reports zero net cash flows from operating activities.",
+        "Note 1 states the registrant was incorporated July 2, 2025 to effect the proposed transaction and had only formation/transaction-preparation activity as of September 30.",
+        "Note 4 states the Sonnet BioTherapeutics combination closed December 2, 2025; Sonnet became a wholly owned subsidiary after the reporting date.",
+        "CUSIP 44916Y106 / IID 01 / Barra USBR571 mapping begins 2025-12-03, after the report date."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USA17M1"
+          ],
+          "barrid": "USA17M1",
+          "cik": "0000929351",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-09-30",
+          "fqtr": 3,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "051514",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2025-05-07",
+              "barrid": "USA17M1",
+              "cik": "0000929351",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2025-04-14",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "855919106",
+              "iid": "01",
+              "issuerid": "A02270",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USA17M1"
+            }
+          ],
+          "rdq": "2025-11-13",
+          "ticker": null
+        }
+      ],
+      "company_name": "STARZ ENTERTAINMENT CORP",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-09-30",
+          "fqtr": 2,
+          "fyearq": 2025,
+          "fyr": 3,
+          "gvkey": "051514",
+          "oancfy": 39.3,
+          "rdq": "2025-11-13"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-09-30",
+          "fqtr": 3,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "051514",
+          "oancfy": null,
+          "rdq": "2025-11-13"
+        }
+      ],
+      "conflicting_data": [
+        "The null FYR=12 rows start their fiscal YTD at January 1, whereas the SEC transition period begins April 1; the March 31 case also predates the Starz security mapping effective date (Compustat 2025-04-14, Barra 2025-05-07).",
+        "CUSIP 855919106 / IID 01 / Barra USA17M1 and current CIK 0000929351 are not enough to override the period and separation mismatch."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; the FYR=12 rows are not eligible replacements for the existing FYR=3 periods.",
+      "gvkey": "051514",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2025-09-30",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          2,
+          3
+        ],
+        "fiscal_year": 2025,
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2025/gvkey_051514/quarterly_2025-09-30_INDL_STD/report.json",
+        "report_json_sha256": "8b9f49b86f9aa8861a4d10c555fed36317e74ed07fe00b14c5171f3fb64b7a4b"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/929351/000119312525114510/d864362d8k.htm",
+        "https://www.sec.gov/Archives/edgar/data/929351/000092935125000103/starz-20250630.htm",
+        "https://www.sec.gov/Archives/edgar/data/929351/000092935126000011/starz-20251231.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USA17M1"
+        ],
+        "ciks": [
+          "0000929351"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2025-05-07",
+            "barrid": "USA17M1",
+            "cik": "0000929351",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2025-04-14",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "855919106",
+            "iid": "01",
+            "issuerid": "A02270",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USA17M1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "SEC filings identify the May 6, 2025 Starz separation from Lions Gate and a transition year from April 1 through December 31, 2025 after changing year-end from March 31 to December 31.",
+        "At all four dates the source has a separate non-null FYR=3 row (-46.0, 65.4, 39.3, 17.9 respectively), consistent with the pre-change/transition reporting periods."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USBATM1"
+          ],
+          "barrid": "USBATM1",
+          "cik": "0001484769",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-12-31",
+          "fqtr": 4,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "017001",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2026-03-24",
+              "barrid": "USBATM1",
+              "cik": "0001484769",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2026-03-24",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "35953D401",
+              "iid": "01",
+              "issuerid": "A98467",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USBATM1"
+            }
+          ],
+          "ticker": null
+        }
+      ],
+      "company_name": "FUBOTV INC",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-12-31",
+          "fqtr": 1,
+          "fyearq": 2026,
+          "fyr": 9,
+          "gvkey": "017001",
+          "oancfy": -200.31,
+          "rdq": "2026-02-03"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-12-31",
+          "fqtr": 4,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "017001",
+          "oancfy": null,
+          "rdq": null
+        }
+      ],
+      "conflicting_data": [
+        "That 10-Q explains the October 29, 2025 Fubo/Hulu business combination and identifies Hulu Live Business as the accounting acquirer; the historical reporting scope differs from the null FYR=12 Compustat row.",
+        "CUSIP 35953D401 / IID 01 / Barra USBATM1 mapping intervals begin March 24, 2026, after this report date."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; same CIK and report date do not reconcile the accounting scope or historical security relationship.",
+      "gvkey": "017001",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2025-12-31",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          1,
+          4
+        ],
+        "fiscal_year": [
+          2025,
+          2026
+        ],
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2025/gvkey_017001/quarterly_2025-12-31_INDL_STD/report.json",
+        "report_json_sha256": "5e6ea0211642ca6c850f2bdf1370d4c82235be5a951a21bba8e6630652d6a6ec"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/1484769/000162828026005782/fubo-20251231.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USBATM1"
+        ],
+        "ciks": [
+          "0001484769"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2026-03-24",
+            "barrid": "USBATM1",
+            "cik": "0001484769",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2026-03-24",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "35953D401",
+            "iid": "01",
+            "issuerid": "A98467",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USBATM1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "The SEC has a 10-Q for the report date 2025-12-31 under CIK 0001484769.",
+        "Compustat also contains a non-null FYR=9 row (-200.31) for the same date."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USBDKC1"
+          ],
+          "barrid": "USBDKC1",
+          "cik": "0001370053",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-12-31",
+          "fqtr": 2,
+          "fyearq": 2026,
+          "fyr": 6,
+          "gvkey": "026162",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2017-01-26",
+              "barrid": "USBDKC1",
+              "cik": "0001370053",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2015-09-09",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "032724106",
+              "iid": "01",
+              "issuerid": "116599",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USBDKC1"
+            }
+          ],
+          "rdq": "2026-03-03",
+          "ticker": null
+        }
+      ],
+      "company_name": "ANAPTYSBIO INC",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-12-31",
+          "fqtr": 4,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "026162",
+          "oancfy": 19.697,
+          "rdq": "2026-03-03"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-12-31",
+          "fqtr": 2,
+          "fyearq": 2026,
+          "fyr": 6,
+          "gvkey": "026162",
+          "oancfy": null,
+          "rdq": "2026-03-03"
+        }
+      ],
+      "conflicting_data": [
+        "The three null rows carry FYR=6 labels dated before that effective reporting change; they represent alternative periods without a matching contemporaneous SEC fiscal calendar.",
+        "The mapping is CUSIP 032724106 / IID 01 / Barra USBDKC1 and its Compustat and Barra intervals cover the dates, but those links do not validate the alternative fiscal labels."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; the null FYR=6 row is not an eligible gap. Preserve the non-null FYR=12 row.",
+      "gvkey": "026162",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2025-12-31",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          2,
+          4
+        ],
+        "fiscal_year": [
+          2025,
+          2026
+        ],
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2025/gvkey_026162/quarterly_2025-12-31_INDL_STD/report.json",
+        "report_json_sha256": "1b41eb572b711e8cd7f1fbdaa4d0501ac516478f465f775eb927fdc77ed73ad7"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/1370053/000137005325000089/anab-20250930.htm",
+        "https://www.sec.gov/Archives/edgar/data/1370053/000119312526088290/anab-20251231.htm",
+        "https://www.sec.gov/Archives/edgar/data/1370053/000119312526219515/anab-20260331.htm",
+        "https://www.sec.gov/Archives/edgar/data/1370053/000119312526396690/anab-ex99_1.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USBDKC1"
+        ],
+        "ciks": [
+          "0001370053"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2017-01-26",
+            "barrid": "USBDKC1",
+            "cik": "0001370053",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2015-09-09",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "032724106",
+            "iid": "01",
+            "issuerid": "116599",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USBDKC1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "The same dates have a separate FYR=12 row with non-null OANCFY: 2025-09-30=-78.300, 2025-12-31=19.697, 2026-03-31=-25.919.",
+        "SEC filings continue to report the December 31 year-end through the 2025 annual period; AnaptysBio disclosed on May 18, 2026 that it changed year-end to June 30, with new-year quarterly reports beginning at September 30, 2026."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USA17M1"
+          ],
+          "barrid": "USA17M1",
+          "cik": "0000929351",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-12-31",
+          "fqtr": 4,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "051514",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2025-05-07",
+              "barrid": "USA17M1",
+              "cik": "0000929351",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2025-04-14",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "855919106",
+              "iid": "01",
+              "issuerid": "A02270",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USA17M1"
+            }
+          ],
+          "rdq": "2026-02-26",
+          "ticker": null
+        }
+      ],
+      "company_name": "STARZ ENTERTAINMENT CORP",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-12-31",
+          "fqtr": 4,
+          "fyearq": 2025,
+          "fyr": 12,
+          "gvkey": "051514",
+          "oancfy": null,
+          "rdq": "2026-02-26"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2025-12-31",
+          "fqtr": 3,
+          "fyearq": 2025,
+          "fyr": 3,
+          "gvkey": "051514",
+          "oancfy": 17.9,
+          "rdq": "2026-02-26"
+        }
+      ],
+      "conflicting_data": [
+        "The null FYR=12 rows start their fiscal YTD at January 1, whereas the SEC transition period begins April 1; the March 31 case also predates the Starz security mapping effective date (Compustat 2025-04-14, Barra 2025-05-07).",
+        "CUSIP 855919106 / IID 01 / Barra USA17M1 and current CIK 0000929351 are not enough to override the period and separation mismatch."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; the FYR=12 rows are not eligible replacements for the existing FYR=3 periods.",
+      "gvkey": "051514",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2025-12-31",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          3,
+          4
+        ],
+        "fiscal_year": 2025,
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2025/gvkey_051514/quarterly_2025-12-31_INDL_STD/report.json",
+        "report_json_sha256": "d79a340594d4f567e09cecccabd710526c30dccfd9ccdd5e032d3d0d6a4d0a3b"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/929351/000119312525114510/d864362d8k.htm",
+        "https://www.sec.gov/Archives/edgar/data/929351/000092935125000103/starz-20250630.htm",
+        "https://www.sec.gov/Archives/edgar/data/929351/000092935126000011/starz-20251231.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USA17M1"
+        ],
+        "ciks": [
+          "0000929351"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2025-05-07",
+            "barrid": "USA17M1",
+            "cik": "0000929351",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2025-04-14",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "855919106",
+            "iid": "01",
+            "issuerid": "A02270",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USA17M1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "SEC filings identify the May 6, 2025 Starz separation from Lions Gate and a transition year from April 1 through December 31, 2025 after changing year-end from March 31 to December 31.",
+        "At all four dates the source has a separate non-null FYR=3 row (-46.0, 65.4, 39.3, 17.9 respectively), consistent with the pre-change/transition reporting periods."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [
+        {
+          "additional_barrids": [
+            "USBDKC1"
+          ],
+          "barrid": "USBDKC1",
+          "cik": "0001370053",
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2026-03-31",
+          "fqtr": 3,
+          "fyearq": 2026,
+          "fyr": 6,
+          "gvkey": "026162",
+          "mapping_relationships": [
+            {
+              "barra_end_date": "2075-12-31",
+              "barra_mapping_status": "mapped",
+              "barra_start_date": "2017-01-26",
+              "barrid": "USBDKC1",
+              "cik": "0001370053",
+              "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+              "compustat_efffrom": "2015-09-09",
+              "compustat_effthru": "2900-01-01",
+              "cusip9": "032724106",
+              "iid": "01",
+              "issuerid": "116599",
+              "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+              "mapping_status": "mapped_current_cik_metadata",
+              "rootid": "USBDKC1"
+            }
+          ],
+          "rdq": "2026-05-12",
+          "ticker": null
+        }
+      ],
+      "company_name": "ANAPTYSBIO INC",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2026-03-31",
+          "fqtr": 1,
+          "fyearq": 2026,
+          "fyr": 12,
+          "gvkey": "026162",
+          "oancfy": -25.919,
+          "rdq": "2026-05-12"
+        },
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2026-03-31",
+          "fqtr": 3,
+          "fyearq": 2026,
+          "fyr": 6,
+          "gvkey": "026162",
+          "oancfy": null,
+          "rdq": "2026-05-12"
+        }
+      ],
+      "conflicting_data": [
+        "The three null rows carry FYR=6 labels dated before that effective reporting change; they represent alternative periods without a matching contemporaneous SEC fiscal calendar.",
+        "The mapping is CUSIP 032724106 / IID 01 / Barra USBDKC1 and its Compustat and Barra intervals cover the dates, but those links do not validate the alternative fiscal labels."
+      ],
+      "disposition": "resolved_exclude_from_sec_fallback; the null FYR=6 row is not an eligible gap. Preserve the non-null FYR=12 row.",
+      "gvkey": "026162",
+      "original_exclusion_reasons": [
+        "multiple_compustat_rows_share_gvkey_datadate"
+      ],
+      "report_date": "2026-03-31",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": [
+          1,
+          3
+        ],
+        "fiscal_year": 2026,
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2026/gvkey_026162/quarterly_2026-03-31_INDL_STD/report.json",
+        "report_json_sha256": "029cfbb106852abf925a1ce38e9334c17f8a21a2c08d11d43d3e71e8341315f6"
+      },
+      "sec_public_sources": [
+        "https://www.sec.gov/Archives/edgar/data/1370053/000137005325000089/anab-20250930.htm",
+        "https://www.sec.gov/Archives/edgar/data/1370053/000119312526088290/anab-20251231.htm",
+        "https://www.sec.gov/Archives/edgar/data/1370053/000119312526219515/anab-20260331.htm",
+        "https://www.sec.gov/Archives/edgar/data/1370053/000119312526396690/anab-ex99_1.htm"
+      ],
+      "security_mapping": {
+        "barrids": [
+          "USBDKC1"
+        ],
+        "ciks": [
+          "0001370053"
+        ],
+        "mapping_statuses": [
+          "mapped_current_cik_metadata"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2017-01-26",
+            "barrid": "USBDKC1",
+            "cik": "0001370053",
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2015-09-09",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "032724106",
+            "iid": "01",
+            "issuerid": "116599",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "mapped_current_cik_metadata",
+            "rootid": "USBDKC1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "The same dates have a separate FYR=12 row with non-null OANCFY: 2025-09-30=-78.300, 2025-12-31=19.697, 2026-03-31=-25.919.",
+        "SEC filings continue to report the December 31 year-end through the 2025 annual period; AnaptysBio disclosed on May 18, 2026 that it changed year-end to June 30, with new-year quarterly reports beginning at September 30, 2026."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [],
+      "company_name": "TOWNEBANK",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2026-09-30",
+          "fqtr": 3,
+          "fyearq": 2026,
+          "fyr": 12,
+          "gvkey": "120318",
+          "oancfy": null,
+          "rdq": "2026-10-28"
+        }
+      ],
+      "conflicting_data": [
+        "The saved mapping explicitly has mapping_status=missing_cik and cik=null. The SEC lookup for TowneBank has no periodic company filings; current ticker/CUSIP and a non-filer CIK are not an issuer-level SEC identity match."
+      ],
+      "disposition": "unresolved_no_sec_cik; do not infer or assign a CIK.",
+      "gvkey": "120318",
+      "original_exclusion_reasons": [
+        "no_unique_mapped_current_cik_metadata"
+      ],
+      "report_date": "2026-09-30",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": 3,
+        "fiscal_year": 2026,
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2026/gvkey_120318/quarterly_2026-09-30_INDL_STD/report.json",
+        "report_json_sha256": "b4b5ee892554b97d67c070afa14edc5b8b83bef2ce29c0f5af68331c056bcb4d"
+      },
+      "sec_public_sources": [],
+      "security_mapping": {
+        "barrids": [
+          "USA2NT1"
+        ],
+        "ciks": [],
+        "mapping_statuses": [
+          "missing_cik"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "1999-05-07",
+            "barrid": "USA2NT1",
+            "cik": null,
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "1999-05-07",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "89214P109",
+            "iid": "01",
+            "issuerid": "A45022",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "missing_cik",
+            "rootid": "USA2NT1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "Compustat report metadata identifies TOWNEBANK; CUSIP 89214P109 / IID 01 maps to Barra USA2NT1, with long Compustat/Barra security intervals.",
+        "The row is a single null FY2026 Q3/FYR12 USD period dated 2026-09-30, with RDQ 2026-10-28."
+      ]
+    },
+    {
+      "candidate_rows_recovered_by_fiscal_key": [],
+      "company_name": "FIRST BANK",
+      "compustat_rows": [
+        {
+          "curcdq": "USD",
+          "currency": "USD",
+          "datadate": "2026-09-30",
+          "fqtr": 3,
+          "fyearq": 2026,
+          "fyr": 12,
+          "gvkey": "177009",
+          "oancfy": null,
+          "rdq": "2026-10-22"
+        }
+      ],
+      "conflicting_data": [
+        "The saved mapping explicitly has mapping_status=missing_cik and cik=null. The saved SEC archive has no issuer submissions for this case. CUSIP/ticker/holder 13F references do not identify an issuer filing CIK or accounting scope."
+      ],
+      "disposition": "unresolved_no_sec_cik; do not infer or assign a CIK.",
+      "gvkey": "177009",
+      "original_exclusion_reasons": [
+        "no_unique_mapped_current_cik_metadata"
+      ],
+      "report_date": "2026-09-30",
+      "report_metadata": {
+        "announcement_date_field": "rdq (Compustat report date; not an SEC filing date)",
+        "company_name_basis": "Current comp.company name and comp.security ticker metadata; not historical point-in-time.",
+        "fiscal_quarter": 3,
+        "fiscal_year": 2026,
+        "mapping_snapshot": "security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+        "report_json": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/2026/gvkey_177009/quarterly_2026-09-30_INDL_STD/report.json",
+        "report_json_sha256": "44298870106d29830778b9d1327aca1f4ac855973f83ff974e11b588fd9c09a8"
+      },
+      "sec_public_sources": [],
+      "security_mapping": {
+        "barrids": [
+          "USBBML1"
+        ],
+        "ciks": [],
+        "mapping_statuses": [
+          "missing_cik"
+        ],
+        "relationships": [
+          {
+            "barra_end_date": "2075-12-31",
+            "barra_mapping_status": "mapped",
+            "barra_start_date": "2013-12-18",
+            "barrid": "USBBML1",
+            "cik": null,
+            "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+            "compustat_efffrom": "2007-03-23",
+            "compustat_effthru": "2900-01-01",
+            "cusip9": "31931U102",
+            "iid": "01",
+            "issuerid": "102967",
+            "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+            "mapping_status": "missing_cik",
+            "rootid": "USBBML1"
+          }
+        ]
+      },
+      "supporting_data": [
+        "Compustat report metadata identifies FIRST BANK; CUSIP 31931U102 / IID 01 maps to Barra USBBML1, with long Compustat/Barra security intervals.",
+        "The row is a single null FY2026 Q3/FYR12 USD period dated 2026-09-30, with RDQ 2026-10-22."
+      ]
+    }
+  ],
+  "corrected_discovery_counts": {
+    "candidate_ciks": 546,
+    "candidate_periods": 977,
+    "null_company_periods": 978,
+    "null_fiscal_periods": 979,
+    "original_excluded_company_periods": 14,
+    "unmapped_or_ambiguous_periods": 2
+  },
+  "corrected_discovery_id": "8481378a55d36dd7f94e1437b9dd0f1167c44da34936e48a0aa7440b8d49697f",
+  "corrected_discovery_manifest_temp_path": "/tmp/sec-fiscal-review-discovery/fallback_pilots/ocf_ytd_cohort_2026-11/full_universe_null_candidates_8481378a55d36dd7f94e1437b9dd0f1167c44da34936e48a0aa7440b8d49697f_21a647f5286e9bcfa87158489eeb7b25cfe564f632ee244a07538153f0948a54.json",
+  "counts": {
+    "financial_values_accepted": 0,
+    "missing_cik_unresolved_company_periods": 2,
+    "original_excluded_company_periods": 14,
+    "recovered_null_fiscal_row_candidates": 13,
+    "resolved_excluded_company_periods": 12,
+    "targeted_sec_review_candidate_rows": 0,
+    "unresolved_company_periods": 2,
+    "unresolved_competing_fiscal_rows_for_hyperliquid_period": 0
+  },
+  "mapping_snapshot_path": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/security_mappings/membership_2026-08-31_2ff2d354474415670bd7527b24822ab41b89feacb1c522b9a9becd3e91c68035.parquet",
+  "mapping_snapshot_sha256": "4c1b0053c02195ae5e9ce810f62cdf059429d12b9df8ef1832a4a8dc61c21d26",
+  "original_discovery_id": "396eed2b516815e46c8eb02b48c95385a02d37a630773182160070beca7d5e7a",
+  "original_discovery_manifest": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/full_universe_null_candidates_396eed2b516815e46c8eb02b48c95385a02d37a630773182160070beca7d5e7a_c1f6d65de8e1c818012c72ccfc139fc0c90d1ae30fa30669a1d9c680f1c51ac3.json",
+  "original_discovery_sha256": "c1f6d65de8e1c818012c72ccfc139fc0c90d1ae30fa30669a1d9c680f1c51ac3",
+  "period_key": "gvkey, datadate, fyearq, fqtr, fyr, currency",
+  "purpose": "Versioned review of the 14 legacy GVKEY/datadate discovery exclusions; candidate findings do not auto-accept or fill values.",
+  "review_artifact_sha256": "9ff45d53abb8058f73b16440c7c12f2b8c16bb5986eddb5ee01971686bfd10f5",
+  "schema_version": 1,
+  "source_quarterly_path": "/home/gunnjake/groups/grp_quant/database/fundamentals/compustat/source_extracts/run_e906597c98025ac25cdf006d/quarterly.parquet",
+  "source_quarterly_sha256": "62cdbc1bd7cf48bbdc2870d9eb0900f84b68a85f0e3362985dc041dce546880f",
+  "source_run_complete": true,
+  "source_run_id": "run_e906597c98025ac25cdf006d",
+  "supersedes_artifact": "sec_ocf_excluded_period_review_2026-11-v1.json",
+  "targeted_sec_followup": {
+    "accession": "0001193125-25-311400",
+    "automated_cohort_classification": "Unresolved for both rows because the saved security mapping is not effective until 2025-12-03; the manual filing review resolves only their SEC fallback eligibility as excluded on fiscal-duration/accounting-scope grounds.",
+    "cik": "0002078856",
+    "cohort_decision_manifest": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/cohort_decisions_25d4a5387bf0fe47d5df477dc30b6817ddbe028d569f6ed5231cd7f2b5db92b1.json",
+    "cohort_observations_artifact": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/ocf_ytd_observations_9259fe3550a60597a1c693bc17ca2206d0cba0f6c2b84362889d3362ad494b78.parquet",
+    "company": "Hyperliquid Strategies Inc",
+    "conflicting_points": [
+      "The filing issuer name, CIK and report end date match the candidate metadata, but this does not make its inception-to-date financial duration match either candidate fiscal YTD duration.",
+      "The future merger explains the later consolidated accounting scope but cannot support applying post-merger scope to the September 30 pre-merger period."
+    ],
+    "filed": "2025-12-08",
+    "filing_archive_path": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/source_documents/CIK0002078856_000119312525311400_ecd752754264fc02cb0f0c886a0a3613aa1953657a9758154e18b21f2f6b0a06.html",
+    "filing_form": "10-Q",
+    "filing_sha256": "ecd752754264fc02cb0f0c886a0a3613aa1953657a9758154e18b21f2f6b0a06",
+    "financial_value_accepted": false,
+    "fiscal_rows": [
+      {
+        "candidate_ytd_start": "2024-10-01",
+        "fqtr": 4,
+        "fyearq": 2025,
+        "fyr": 9,
+        "sec_cash_flow_end": "2025-09-30",
+        "sec_cash_flow_start": "2025-07-02"
+      },
+      {
+        "candidate_ytd_start": "2025-04-01",
+        "fqtr": 1,
+        "fyearq": 2026,
+        "fyr": 6,
+        "sec_cash_flow_end": "2025-09-30",
+        "sec_cash_flow_start": "2025-07-02"
+      }
+    ],
+    "gvkey": "036356",
+    "primary_document": "https://www.sec.gov/Archives/edgar/data/2078856/000119312525311400/d47504d10q.htm",
+    "reason": "The filing covers the exact end date but its cash-flow statement is inception-to-date (2025-07-02 through 2025-09-30), matching neither candidate YTD start. The registrant was formed to effect a transaction and had no operations/revenues as of period end; the Sonnet merger closed on 2025-12-02, after the reporting date. The security mapping begins 2025-12-03, also after period end. Neither candidate is a valid comparable fiscal YTD fallback period.",
+    "report_date": "2025-09-30",
+    "retrieval_manifest": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/sec_fetch_progress_87c7ba11cdba19da4978efb1e5ea79599f759e357b0ed8b9efe62bee361482f6.json",
+    "review_result": "resolved_exclude_both_fiscal_rows_from_sec_fallback",
+    "supporting_points": [
+      "10-Q cover identifies Hyperliquid Strategies Inc and quarter ended 2025-09-30 under CIK 0002078856.",
+      "Cash-flow statement explicitly covers July 2, 2025 (inception) through September 30, 2025; reported net cash flows from operating activities are zero for this formation period.",
+      "Note 1 says Hyperliquid Strategies was incorporated July 2, 2025 to effect the proposed transaction; as of September 30 its activities related to formation and transaction preparation and it had not generated revenue.",
+      "Note 4 says the Sonnet BioTherapeutics business combination closed December 2, 2025; Sonnet became a wholly owned subsidiary after the reporting date.",
+      "Compustat/Barra CUSIP 44916Y106, IID 01, Barra USBR571 relationship begins December 3, 2025, after the report date."
+    ]
+  }
+}

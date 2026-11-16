@@ -31,6 +31,13 @@ uv sync
 source .venv/bin/activate
 ```
 
+To run the repository's offline regression suite, include the development
+dependency group, which installs pytest:
+
+```bash
+uv sync --group dev
+```
+
 Activate the environment again whenever you open a new terminal.
 
 ### 3. Configure `.env`
@@ -340,48 +347,106 @@ ID; keys have the form
 `quarterly|...`. The file must name exactly the report identities in the
 selected run.
 
-Use the tables through the repository's `Database` API. These return Polars
-`LazyFrame`s and remain separate from daily assets and signals:
+### Quant quickstart
+
+Run the checked-in example against the saved development data:
+
+```bash
+.venv/bin/python examples/compustat_quickstart.py
+```
+
+The script initializes `Database(DatabaseName.DEVELOPMENT)` and reads the
+annual, quarterly, and assets tables. It calculates annual operating
+profitability as `oiadp / at`, annual revenue growth only when the prior
+`fyear` is present, and displays quarterly `oancfy` with `fyearq`, `fqtr`,
+`fyr`, and `currency`. `sale`, `at`, `oiadp`, and cash-flow amounts are in
+millions of reported currency; the currency column identifies that currency.
+Source snapshot IDs and report paths remain alongside calculated results.
+Other annual fields include balance-sheet items such as `act`, `che`, `dltt`,
+and `seq`; income items such as `sale`, `cogs`, `gp`, `ni`, and `xrd`; and
+cash-flow items such as `oancf`, `capx`, and `fincf`. Quarterly equivalents
+include `atq`, `saleq`, `niq`, and YTD cash-flow fields such as `oancfy` and
+`capxy`. The full field lists, fiscal labels, and provenance columns are in
+[Physical schemas and logical ERD](#physical-schemas-and-logical-erd).
+
+The default date policy selects the latest saved assets date on or before
+today, scanning yearly asset files backward from the requested date's year.
+Pass `--asset-date YYYY-MM-DD` to select another saved snapshot. For the join, the
+example chooses one latest annual fiscal-year row per Barrid, requires unique
+asset Barrids at the selected date, and validates a one-to-one join. Separate
+Barrids that map to the same GVKEY remain separate share-class securities.
+
+`fyear`, `fyearq`, `fqtr`, and `fyr` are source fiscal labels; `datadate` is
+the reporting period date. Quarterly cash-flow fields ending in `y`, including
+`oancfy`, are fiscal-year-to-date amounts, not standalone quarter amounts.
+The saved Compustat values are current vendor data, not historical
+point-in-time vintages. Filtering `datadate` to a past asset date does not
+establish when the report became available and does not make the output safe
+for historical backtesting. The query tables remain separate from daily
+assets and signals.
+
+### Reviewed SEC operating-cash-flow fallback
+
+The development database has a separate policy/input-scoped resolved
+quarterly table. The reusable OCF-YTD collector and extractor keep candidate
+discovery separate from acceptance. Candidate configuration must establish
+issuer identity and consolidation scope; a CIK match alone cannot pass that
+gate. Only reviewed `accepted` candidates with an exact accession, period,
+fiscal labels, concept, currency/unit, filing value, scale conversion, and
+cutoff can fill a null `oancfy`. Original Compustat columns and non-null values
+are retained. SEC YTD values remain labeled YTD.
+
+Build the archived, bounded validation with an explicit timezone-aware policy
+cutoff:
+
+```bash
+.venv-fips/bin/python -m scripts.build_resolved_fundamentals \
+    --cutoff 2026-10-29T23:59:59+00:00
+```
+
+The validated development scope is
+`b22e2f39af3e10bf8f4beef8b0a224057d92e4eaa28385e39e6c1a676994bf7d`. Open it
+through the existing `Database`/`Table` interface and query the full universe:
 
 ```python
 import polars as pl
 from pipelines.utils.enums import DatabaseName
 from pipelines.utils.tables import Database
 
-database = Database(DatabaseName.DEVELOPMENT)
-
-annual_expenses = (
-    database.fundamentals_annual_table.read()
-    .filter(
-        (pl.col("barrid") == "USA91R1")
-        & pl.col("fyear").is_between(2014, 2018)
-    )
-    .select(
-        "barrid", "gvkey", "datadate", "fyear", "currency",
-        "cogs", "xrd", "xsga", "xint", "txt", "oiadp",
-    )
-)
-
-quarterly_cash_flow = (
-    database.fundamentals_quarterly_table.read()
-    .filter(
-        (pl.col("barrid") == "USA91R1")
-        & pl.col("fyearq").is_between(2014, 2018)
-    )
-    .select("barrid", "gvkey", "datadate", "fyearq", "fqtr", "oancfy", "currency")
-)
+scope = "b22e2f39af3e10bf8f4beef8b0a224057d92e4eaa28385e39e6c1a676994bf7d"
+resolved = Database(DatabaseName.DEVELOPMENT).fundamentals_quarterly_resolved_table(scope)
+universe = resolved.read().select(
+    "barrid", "gvkey", "datadate", "fyearq", "fqtr", "fyr", "currency",
+    "original_oancfy", "resolved_oancfy", "selected_source", "selection_reason",
+).collect()
+print(universe)  # 30,542 rows; source shows Compustat, SEC, or unresolved
+print(universe.filter(pl.col("selected_source") == "sec"))
 ```
 
-Fiscal years come from `fyear`/`fyearq`; `datadate` remains the reporting
-period date and is not relabeled as a publication or availability date.
-Quarterly cash-flow fields ending in `y`, including `oancfy`, retain Compustat's
-fiscal-year-to-date values; the query layer does not derive standalone
-quarters. The 2014–2018 examples return rows only if those periods were included
-in the source collection. These are current vendor extracts, not historical
-point-in-time financial vintages. A 2026 mapping snapshot applied to earlier
-reports does not prove historical security mappings or historical information
-availability. Annual and quarterly values are not forward-filled onto daily
-assets or joined into signals.
+Run all development stages with one command:
+
+```bash
+.venv-fips/bin/python -m scripts.build_development_fundamentals \
+    --cutoff 2026-10-29T23:59:59+00:00
+```
+
+It checks the completed source-run reports, reuses a matching validated query
+scope or builds the query tables, regenerates the bounded candidate report from
+archived SEC responses, builds the resolved scope, then verifies the output
+through `Database`. It does not fetch SEC data or wait on unreviewed
+candidates; those remain null. If the source run or mapping scope changes, the
+query builder protects existing development tables by default. Pass
+`--rebuild-query-scope` only when you intend to replace that development query
+scope.
+
+The bounded 10-gap review accepted one Wells Fargo observation (`24,785.0` USD
+millions); four were late, three had no matching filing in the saved submission
+snapshot, one lacked supported US-GAAP coverage, and Mechanics remains for
+identity review after its reverse acquisition. No new SEC requests or
+Compustat reruns were needed. This output uses current-vintage data and the
+comparison cutoff above; it is not historical point-in-time data. See
+[`SEC_FALLBACK_HANDOFF.md`](SEC_FALLBACK_HANDOFF.md) for classifications,
+source and output checksums, preservation checks, and limitations.
 
 Annual query-table keys add `(fyear, fyr)` to
 `(barrid, gvkey, datadate, indfmt, consol, popsrc, datafmt, mapping_date,
