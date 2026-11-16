@@ -396,38 +396,49 @@ fiscal labels, concept, currency/unit, filing value, scale conversion, and
 cutoff can fill a null `oancfy`. Original Compustat columns and non-null values
 are retained. SEC YTD values remain labeled YTD.
 
-Build the archived, bounded validation with an explicit timezone-aware policy
-cutoff:
+Build the reviewed full-universe development output with an explicit
+timezone-aware policy cutoff and the versioned review artifact:
 
 ```bash
-.venv-fips/bin/python -m scripts.build_resolved_fundamentals \
-    --cutoff 2026-10-29T23:59:59+00:00
+.venv/bin/python -m scripts.build_development_fundamentals \
+    --cutoff 2026-10-29T23:59:59+00:00 \
+    --run-id run_e906597c98025ac25cdf006d \
+    --review-artifact docs/sec_ocf_full_universe_candidate_review_v1.json
 ```
 
-The validated development scope is
-`b22e2f39af3e10bf8f4beef8b0a224057d92e4eaa28385e39e6c1a676994bf7d`. Open it
-through the existing `Database`/`Table` interface and query the full universe:
+The reviewed development scope is
+`554ee70eae30809295529849ef67eea627ae928ccb1d34cddcf76fb47ab08190`. It has
+31,789 quarterly rows, preserves all 30,805 non-null Compustat `oancfy` values,
+and contains six accepted company-periods represented by six SEC-filled Barra
+rows. Open it through `Database` and query the supplemented rows:
 
 ```python
 import polars as pl
 from pipelines.utils.enums import DatabaseName
 from pipelines.utils.tables import Database
 
-scope = "b22e2f39af3e10bf8f4beef8b0a224057d92e4eaa28385e39e6c1a676994bf7d"
+scope = "554ee70eae30809295529849ef67eea627ae928ccb1d34cddcf76fb47ab08190"
 resolved = Database(DatabaseName.DEVELOPMENT).fundamentals_quarterly_resolved_table(scope)
-universe = resolved.read().select(
-    "barrid", "gvkey", "datadate", "fyearq", "fqtr", "fyr", "currency",
-    "original_oancfy", "resolved_oancfy", "selected_source", "selection_reason",
-).collect()
-print(universe)  # 30,542 rows; source shows Compustat, SEC, or unresolved
-print(universe.filter(pl.col("selected_source") == "sec"))
+supplemented = (resolved.read()
+    .filter(pl.col("selected_source") == "sec")
+    .select("gvkey", "barrid", "datadate", "resolved_oancfy", "sec_value_raw",
+            "sec_accession", "selection_reason", "candidate_evidence_json")
+    .sort(["datadate", "gvkey"]).collect())
+print(supplemented)
 ```
 
-Run all development stages with one command:
+The generic build validates full-universe accounting dynamically as discovered
+periods = classified periods + pending periods; it does not assume a fixed
+candidate total or acceptance count. In the reviewed source run, 977 periods
+reconcile to 976 classified plus one pending CIK `0001569650`.
+
+Run the development stages with the same explicit inputs:
 
 ```bash
-.venv-fips/bin/python -m scripts.build_development_fundamentals \
-    --cutoff 2026-10-29T23:59:59+00:00
+.venv/bin/python -m scripts.build_development_fundamentals \
+    --cutoff 2026-10-29T23:59:59+00:00 \
+    --run-id run_e906597c98025ac25cdf006d \
+    --review-artifact docs/sec_ocf_full_universe_candidate_review_v1.json
 ```
 
 It checks the completed source-run reports, reuses a matching validated query
@@ -439,12 +450,13 @@ query builder protects existing development tables by default. Pass
 `--rebuild-query-scope` only when you intend to replace that development query
 scope.
 
-The bounded 10-gap review accepted one Wells Fargo observation (`24,785.0` USD
-millions); four were late, three had no matching filing in the saved submission
-snapshot, one lacked supported US-GAAP coverage, and Mechanics remains for
-identity review after its reverse acquisition. No new SEC requests or
-Compustat reruns were needed. This output uses current-vintage data and the
-comparison cutoff above; it is not historical point-in-time data. See
+The six accepted periods are Brandywine Realty Trust, BrightSpire Capital,
+Vanda Pharmaceuticals, and Syntec Optics FY2024 Q1–Q3. The output has 978
+remaining null resolved values; the pending CIK `0001569650` remains
+unresolved because its Company Facts 404 does not establish no disclosure. No
+new SEC requests or Compustat reruns were needed. This output uses
+current-vintage data and the comparison cutoff above; it is not historical
+point-in-time data. See
 [`SEC_FALLBACK_HANDOFF.md`](SEC_FALLBACK_HANDOFF.md) for classifications,
 source and output checksums, preservation checks, and limitations.
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 import json
+import os
 from pathlib import Path
 
 import polars as pl
@@ -13,6 +14,7 @@ from pipelines.utils.tables import Database
 from scripts.build_development_fundamentals import (
     DEFAULT_CUTOFF, DEFAULT_REVIEW, FULL_UNIVERSE_JOB_LOG,
     _apply_review_artifact, _defaults, _full_universe_inputs,
+    _validate_full_universe_reconciliation,
 )
 
 
@@ -44,12 +46,25 @@ def test_review_artifact_has_six_exact_company_period_values_and_provenance():
     ]
 
 
+def test_full_universe_reconciliation_is_count_driven():
+    _validate_full_universe_reconciliation(
+        7, 6, [{"gvkey": "000001", "datadate": "2026-09-30"}],
+        [{"gvkey": str(i)} for i in range(6)],
+    )
+    with pytest.raises(ResolutionError, match="accounting mismatch"):
+        _validate_full_universe_reconciliation(8, 6, [{"gvkey": "000001", "datadate": "2026-09-30"}],
+                                               [{"gvkey": str(i)} for i in range(6)])
+
+
 def test_brandywine_consolidated_and_operating_partnership_contexts_are_distinct():
     artifact = json.loads(DEFAULT_REVIEW.read_text())
     case = next(c for c in artifact["cases"] if c["gvkey"] == "013562")
-    filing = Path(case["evidence"]["filing_path"]).read_bytes()
+    facts = case["evidence"]["inline_facts"]
+    assert [f["contextref"] for f in facts] == ["c-1", "c-2"]
+    assert {f["scaled_value"] for f in facts} == {"84357000"}
+    fixture = b"""<xbrli:context id='c-1'><xbrli:entity><xbrli:identifier>0000790816</xbrli:identifier></xbrli:entity><xbrli:period><xbrli:startDate>2026-01-01</xbrli:startDate><xbrli:endDate>2026-09-30</xbrli:endDate></xbrli:period></xbrli:context><xbrli:context id='c-2'><xbrli:entity><xbrli:identifier>0000790816</xbrli:identifier><xbrli:segment><xbrldi:explicitMember dimension='dei:LegalEntityAxis'>bdn:BrandywineOperatingPartnershipL.P.Member</xbrldi:explicitMember></xbrli:segment></xbrli:entity><xbrli:period><xbrli:startDate>2026-01-01</xbrli:startDate><xbrli:endDate>2026-09-30</xbrli:endDate></xbrli:period></xbrli:context><ix:nonFraction name='us-gaap:NetCashProvidedByUsedInOperatingActivities' contextRef='c-1'>84357000</ix:nonFraction><ix:nonFraction name='us-gaap:NetCashProvidedByUsedInOperatingActivities' contextRef='c-2'>84357000</ix:nonFraction>"""
     parser = _ContextAndFactParser()
-    parser.feed(filing.decode("utf-8", errors="replace"))
+    parser.feed(fixture.decode())
     facts = [f for f in parser.facts if f["attrs"].get("contextref") in {"c-1", "c-2"}]
     assert len(facts) == 2
     assert parser.contexts["c-1"]["dimensions"] == []
@@ -61,6 +76,7 @@ def test_brandywine_consolidated_and_operating_partnership_contexts_are_distinct
     assert [f["scaled_value"] for f in facts] == [f["scaled_value"] for f in facts[:1]] * 2
 
 
+@pytest.mark.skipif(os.environ.get("RUN_FULTON_INTEGRATION") != "1", reason="requires Fulton SEC archive and full-universe log")
 def test_review_inputs_match_archived_full_universe_and_pending_404():
     _, _, mapping, _, _ = _defaults()
     decisions, observations, cases = _full_universe_inputs(
@@ -79,6 +95,7 @@ def test_review_inputs_match_archived_full_universe_and_pending_404():
     assert sum(c.get("review_artifact_path") is not None for c in reviewed) == 6
 
 
+@pytest.mark.skipif(os.environ.get("RUN_FULTON_INTEGRATION") != "1", reason="requires Fulton SEC archive and mapping snapshot")
 def test_review_artifact_source_hash_mismatch_is_rejected(tmp_path):
     _, _, mapping, _, _ = _defaults()
     decisions = Path("/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/cohort_decisions_2b6b36637163f96f44a5b9a359d758634404838d4a8af1ab6ad05a643972fe6a.json")
@@ -91,6 +108,7 @@ def test_review_artifact_source_hash_mismatch_is_rejected(tmp_path):
                                cutoff=DEFAULT_CUTOFF, mapping_path=mapping)
 
 
+@pytest.mark.skipif(os.environ.get("RUN_FULTON_INTEGRATION") != "1", reason="requires Fulton development Database tables")
 def test_database_resolved_output_has_expected_fills_and_preserves_source():
     root, *_ = _defaults()
     manifests = sorted((root / "development").glob("fundamentals_quarterly_resolved_*/manifest.json"),

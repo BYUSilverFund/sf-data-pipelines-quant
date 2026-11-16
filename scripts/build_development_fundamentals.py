@@ -70,14 +70,27 @@ def _full_universe_inputs(log_path: Path, *, run_id: str, mapping_path: Path, cu
         if case.get("compustat_run_id") != run_id or case.get("mapping_snapshot_sha256") != mapping_hash:
             raise ResolutionError("full-universe case source run or mapping evidence hash mismatch")
     pending = coverage.get("pending_periods", [])
-    if (coverage.get("candidate_periods") != 977 or coverage.get("complete_periods") != 976
-            or coverage.get("partial_or_missing_periods") != 1 or len(cases) != 976
-            or len(pending) != 1 or pending[0].get("cik") != "0001569650"):
-        raise ResolutionError("full-universe accounting mismatch: expected 977 = 976 classified + 1 pending CIK 0001569650")
-    cases = list(cases) + [{**pending[0], "classification": "Pending incomplete evidence",
+    discovered = coverage.get("candidate_periods")
+    classified = coverage.get("complete_periods")
+    pending_count = coverage.get("partial_or_missing_periods")
+    if not all(isinstance(x, int) for x in (discovered, classified, pending_count)) or pending_count != len(pending):
+        raise ResolutionError("full-universe coverage counts are invalid")
+    _validate_full_universe_reconciliation(discovered, classified, pending, cases)
+    cases = list(cases) + [{**item, "classification": "Pending incomplete evidence",
                             "decision": "unresolved", "compustat_run_id": run_id,
-                            "mapping_snapshot_sha256": mapping_hash}]
+                            "mapping_snapshot_sha256": mapping_hash} for item in pending]
     return artifacts["decisions_manifest"], artifacts["observations_parquet"], cases
+
+
+def _validate_full_universe_reconciliation(discovered: int, classified: int,
+                                           pending: list[dict], cases: list[dict]) -> None:
+    if discovered != classified + len(pending) or classified != len(cases):
+        raise ResolutionError(
+            "full-universe accounting mismatch: discovered periods must equal classified plus pending"
+        )
+    keys = [(str(item.get("gvkey", "")), str(item.get("datadate", ""))) for item in pending]
+    if any(not all(key) for key in keys) or len(keys) != len(set(keys)):
+        raise ResolutionError("full-universe pending periods must have unique company-period keys")
 
 
 def _read_json(path: Path) -> dict:
@@ -185,8 +198,9 @@ def _apply_review_artifact(cases: list[dict], decisions_path: Path, review_path:
             "extraction_version": review["schema_version"], "decision_reason": rv["reason"],
             "review_artifact_path": str(review_path.resolve()),
         })
-    if len(reviewed) != 6:
-        raise ResolutionError(f"expected six accepted reviewed cases, found {len(reviewed)}")
+    accepted_count = sum(item.get("decision") == "accepted" for item in review.get("cases", []))
+    if len(reviewed) != accepted_count:
+        raise ResolutionError("accepted candidate reviews were not all validated")
     return cases + reviewed
 
 
