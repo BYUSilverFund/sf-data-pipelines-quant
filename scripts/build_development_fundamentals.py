@@ -489,7 +489,7 @@ def run(*, run_ids: list[str] | None = None, mapping_snapshot: Path | None = Non
 
     print("[4/5] Building policy-scoped resolved development table", flush=True)
     output_path, scope, _ = build_resolved(
-        cutoff=cutoff, database_root=database_root, archive=archive_root,
+        cutoff=cutoff, database_root=database_root,
         decisions_path=decisions_path, observations_path=observations_path,
         source_run_id=selected_runs[0], output_root=database_root / "development",
         full_universe_cases=cases,
