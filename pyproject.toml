@@ -12,13 +12,16 @@ dependencies = [
     "polars>=1.38.1",
     "pyarrow>=22.0.0",
     "python-dotenv>=1.2.1",
+    "requests>=2.33.1",
     "sf-backtester>=0.2.0",
     "sf-quant>=0.2.9",
     "tqdm>=4.67.1",
+    "urllib3>=2.5.0",
     "wrds>=3.4.0",
 ]
 
 [dependency-groups]
 dev = [
+    "pytest>=8.4.2",
     "rich>=14.3.3",
 ]

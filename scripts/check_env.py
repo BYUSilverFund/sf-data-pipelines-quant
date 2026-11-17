@@ -12,7 +12,8 @@ required = [
 
 optional = [
     "PROJECT_ROOT",
-    "BYU_EMAIL", 
+    "BYU_EMAIL",
+    "SEC_USER_AGENT",
 ]
 
 print("Checking environment variables...\n")

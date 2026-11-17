@@ -1,0 +1,634 @@
+{
+  "cases": [
+    {
+      "all_matching_period_observations": [
+        {
+          "accn": "0001493152-24-021132",
+          "end": "2024-03-31",
+          "filed": "2024-05-23",
+          "form": "10-Q",
+          "fp": "Q1",
+          "fy": 2024,
+          "start": "2024-01-01",
+          "unit": "USD",
+          "val": -289841
+        },
+        {
+          "accn": "0001493152-25-016962",
+          "end": "2024-03-31",
+          "filed": "2025-10-06",
+          "form": "10-Q",
+          "fp": "Q1",
+          "frame": "CY2024Q1",
+          "fy": 2025,
+          "start": "2024-01-01",
+          "unit": "USD",
+          "val": -289841
+        }
+      ],
+      "barrid": "USBPLI1",
+      "cik": "0001866816",
+      "classification": "accepted",
+      "company_name": "SYNTEC OPTICS HOLDINGS, INC.",
+      "companyfacts_response_sha256": "d1076af4c010b5ac404e0cb99f1016b9e81f358287f494394291785b358c002e",
+      "compustat_currency": "USD",
+      "compustat_oancfy": null,
+      "datadate": "2024-03-31",
+      "decision": "accepted",
+      "evidence": {
+        "companyfacts_sha256": "d1076af4c010b5ac404e0cb99f1016b9e81f358287f494394291785b358c002e",
+        "filing_path": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/source_documents/CIK0001866816_000149315224021132_d093d3a0fd0cfd0694f8c4bf18ca3c9ba463998da9949eb32f5232bbe8480b52.html",
+        "filing_sha256": "d093d3a0fd0cfd0694f8c4bf18ca3c9ba463998da9949eb32f5232bbe8480b52",
+        "filing_url": "https://www.sec.gov/Archives/edgar/data/1866816/000149315224021132/form10-q.htm",
+        "inline_facts": [
+          {
+            "contextref": "From2024-01-01to2024-03-31",
+            "decimals": "0",
+            "display_value": "289,841",
+            "format": "ixt:numdotdecimal",
+            "id": "Fact000319",
+            "name": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+            "period_end": "2024-03-31",
+            "period_start": "2024-01-01",
+            "scaled_value": "-289841",
+            "sign": "-",
+            "unitref": "USD"
+          }
+        ],
+        "submissions_sha256": "a4aa503ec45c47d8b9a6e412be85e29d28710a6359ba3567227fc62aced01724"
+      },
+      "fqtr": 1,
+      "fyearq": 2024,
+      "fyr": 12,
+      "gvkey": "039836",
+      "mapping_relationships": [
+        {
+          "barra_end_date": "2075-12-31",
+          "barra_mapping_status": "mapped",
+          "barra_start_date": "2023-11-08",
+          "barrid": "USBPLI1",
+          "cik": "0001866816",
+          "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+          "compustat_efffrom": "2023-11-08",
+          "compustat_effthru": "2900-01-01",
+          "cusip9": "87169M105",
+          "iid": "02",
+          "issuerid": "138639",
+          "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+          "mapping_status": "mapped_current_cik_metadata",
+          "rootid": "USBPLI1"
+        }
+      ],
+      "matching_period_filings": [
+        {
+          "acceptanceDateTime": "2024-05-23T19:10:58.000Z",
+          "accessionNumber": "0001493152-24-021132",
+          "filingDate": "2024-05-23",
+          "form": "10-Q",
+          "primaryDocument": "form10-q.htm",
+          "reportDate": "2024-03-31"
+        }
+      ],
+      "period_end": "2024-03-31",
+      "period_start": "2024-01-01",
+      "review": {
+        "acceptance_time": "2024-05-23T19:10:58.000Z",
+        "accession": "0001493152-24-021132",
+        "conflict_review": "Later comparative accession 0001493152-25-016962 repeats -289,841 USD; no exact-period conflict/amendment found.",
+        "consolidation_scope_verified": true,
+        "cutoff_verified": true,
+        "decision": "accepted",
+        "identity_verified": true,
+        "normalized_compustat_value": -0.289841,
+        "period_verified": true,
+        "reason": "Syntec filing identifies CIK 0001866816 and consolidated cash flows for three months ended 2024-03-31. Exact undimensioned context spans 2024-01-01\u20132024-03-31 (Q1 YTD equals the quarter). Inline fact has no scale, sign=\"-\", unit USD, displayed 289,841; Company Facts raw val is -289,841 USD. Filing presents dollar amounts without thousands scaling; normalized value is -0.289841 USD millions. Later 2025 comparative repeats the same duration/value. Original filed/accepted 2024-05-23/2024-05-23T19:10:58Z before cutoff. Identity, consolidation scope, mapping verified, no conflicting amended fact found, and Compustat oancfy is null.",
+        "unit_scale_sign_verified": true
+      },
+      "submissions_response_sha256": "a4aa503ec45c47d8b9a6e412be85e29d28710a6359ba3567227fc62aced01724"
+    },
+    {
+      "all_matching_period_observations": [
+        {
+          "accn": "0001493152-24-032108",
+          "end": "2024-06-30",
+          "filed": "2024-08-14",
+          "form": "10-Q",
+          "fp": "Q2",
+          "fy": 2024,
+          "start": "2024-01-01",
+          "unit": "USD",
+          "val": -1983883
+        },
+        {
+          "accn": "0001493152-25-016964",
+          "end": "2024-06-30",
+          "filed": "2025-10-06",
+          "form": "10-Q",
+          "fp": "Q2",
+          "fy": 2025,
+          "start": "2024-01-01",
+          "unit": "USD",
+          "val": -1983883
+        }
+      ],
+      "barrid": "USBPLI1",
+      "cik": "0001866816",
+      "classification": "accepted",
+      "company_name": "SYNTEC OPTICS HOLDINGS, INC.",
+      "companyfacts_response_sha256": "d1076af4c010b5ac404e0cb99f1016b9e81f358287f494394291785b358c002e",
+      "compustat_currency": "USD",
+      "compustat_oancfy": null,
+      "datadate": "2024-06-30",
+      "decision": "accepted",
+      "evidence": {
+        "companyfacts_sha256": "d1076af4c010b5ac404e0cb99f1016b9e81f358287f494394291785b358c002e",
+        "filing_path": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/source_documents/CIK0001866816_000149315224032108_c8f003ab945d6240931b013a87745a4d22d1ebb12eb815f1b2019e1dbe7d05e6.html",
+        "filing_sha256": "c8f003ab945d6240931b013a87745a4d22d1ebb12eb815f1b2019e1dbe7d05e6",
+        "filing_url": "https://www.sec.gov/Archives/edgar/data/1866816/000149315224032108/form10-q.htm",
+        "inline_facts": [
+          {
+            "contextref": "From2024-01-01to2024-06-30",
+            "decimals": "0",
+            "display_value": "1,983,883",
+            "format": "ixt:numdotdecimal",
+            "id": "Fact000430",
+            "name": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+            "period_end": "2024-06-30",
+            "period_start": "2024-01-01",
+            "scaled_value": "-1983883",
+            "sign": "-",
+            "unitref": "USD"
+          }
+        ],
+        "submissions_sha256": "a4aa503ec45c47d8b9a6e412be85e29d28710a6359ba3567227fc62aced01724"
+      },
+      "fqtr": 2,
+      "fyearq": 2024,
+      "fyr": 12,
+      "gvkey": "039836",
+      "mapping_relationships": [
+        {
+          "barra_end_date": "2075-12-31",
+          "barra_mapping_status": "mapped",
+          "barra_start_date": "2023-11-08",
+          "barrid": "USBPLI1",
+          "cik": "0001866816",
+          "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+          "compustat_efffrom": "2023-11-08",
+          "compustat_effthru": "2900-01-01",
+          "cusip9": "87169M105",
+          "iid": "02",
+          "issuerid": "138639",
+          "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+          "mapping_status": "mapped_current_cik_metadata",
+          "rootid": "USBPLI1"
+        }
+      ],
+      "matching_period_filings": [
+        {
+          "acceptanceDateTime": "2024-08-14T19:25:30.000Z",
+          "accessionNumber": "0001493152-24-032108",
+          "filingDate": "2024-08-14",
+          "form": "10-Q",
+          "primaryDocument": "form10-q.htm",
+          "reportDate": "2024-06-30"
+        }
+      ],
+      "period_end": "2024-06-30",
+      "period_start": "2024-01-01",
+      "review": {
+        "acceptance_time": "2024-08-14T19:25:30.000Z",
+        "accession": "0001493152-24-032108",
+        "conflict_review": "Later comparative accession 0001493152-25-016964 repeats -1,983,883 USD; no exact-period conflict/amendment found.",
+        "consolidation_scope_verified": true,
+        "cutoff_verified": true,
+        "decision": "accepted",
+        "identity_verified": true,
+        "normalized_compustat_value": -1.983883,
+        "period_verified": true,
+        "reason": "Syntec filing identifies CIK 0001866816 and consolidated cash flows for six months ended 2024-06-30. Exact undimensioned context spans 2024-01-01\u20132024-06-30. Inline fact has no scale, sign=\"-\", unit USD, displayed 1,983,883; Company Facts raw val is -1,983,883 USD. Filing presents dollar amounts without thousands scaling; normalized value is -1.983883 USD millions. Later 2025 comparative repeats the same exact-duration amount. Original filing accepted 2024-08-14T19:25:30Z before cutoff. Identity, scope and mapping are verified, no conflicting amended value appears, and Compustat oancfy remains null.",
+        "unit_scale_sign_verified": true
+      },
+      "submissions_response_sha256": "a4aa503ec45c47d8b9a6e412be85e29d28710a6359ba3567227fc62aced01724"
+    },
+    {
+      "all_matching_period_observations": [
+        {
+          "accn": "0001493152-24-045768",
+          "end": "2024-09-30",
+          "filed": "2024-11-14",
+          "form": "10-Q",
+          "fp": "Q3",
+          "fy": 2024,
+          "start": "2024-01-01",
+          "unit": "USD",
+          "val": -1566598
+        },
+        {
+          "accn": "0001493152-25-022438",
+          "end": "2024-09-30",
+          "filed": "2025-11-14",
+          "form": "10-Q",
+          "fp": "Q3",
+          "fy": 2025,
+          "start": "2024-01-01",
+          "unit": "USD",
+          "val": -1566598
+        }
+      ],
+      "barrid": "USBPLI1",
+      "cik": "0001866816",
+      "classification": "accepted",
+      "company_name": "SYNTEC OPTICS HOLDINGS, INC.",
+      "companyfacts_response_sha256": "d1076af4c010b5ac404e0cb99f1016b9e81f358287f494394291785b358c002e",
+      "compustat_currency": "USD",
+      "compustat_oancfy": null,
+      "datadate": "2024-09-30",
+      "decision": "accepted",
+      "evidence": {
+        "companyfacts_sha256": "d1076af4c010b5ac404e0cb99f1016b9e81f358287f494394291785b358c002e",
+        "filing_path": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/source_documents/CIK0001866816_000149315224045768_10998fb692a96aecfa1b6d32e2090f453f3d50eddd4d439146503b540da8b2ec.html",
+        "filing_sha256": "10998fb692a96aecfa1b6d32e2090f453f3d50eddd4d439146503b540da8b2ec",
+        "filing_url": "https://www.sec.gov/Archives/edgar/data/1866816/000149315224045768/form10-q.htm",
+        "inline_facts": [
+          {
+            "contextref": "From2024-01-01to2024-09-30",
+            "decimals": "0",
+            "display_value": "1,566,598",
+            "format": "ixt:numdotdecimal",
+            "id": "Fact000419",
+            "name": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+            "period_end": "2024-09-30",
+            "period_start": "2024-01-01",
+            "scaled_value": "-1566598",
+            "sign": "-",
+            "unitref": "USD"
+          }
+        ],
+        "submissions_sha256": "a4aa503ec45c47d8b9a6e412be85e29d28710a6359ba3567227fc62aced01724"
+      },
+      "fqtr": 3,
+      "fyearq": 2024,
+      "fyr": 12,
+      "gvkey": "039836",
+      "mapping_relationships": [
+        {
+          "barra_end_date": "2075-12-31",
+          "barra_mapping_status": "mapped",
+          "barra_start_date": "2023-11-08",
+          "barrid": "USBPLI1",
+          "cik": "0001866816",
+          "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+          "compustat_efffrom": "2023-11-08",
+          "compustat_effthru": "2900-01-01",
+          "cusip9": "87169M105",
+          "iid": "02",
+          "issuerid": "138639",
+          "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+          "mapping_status": "mapped_current_cik_metadata",
+          "rootid": "USBPLI1"
+        }
+      ],
+      "matching_period_filings": [
+        {
+          "acceptanceDateTime": "2024-11-14T20:52:36.000Z",
+          "accessionNumber": "0001493152-24-045768",
+          "filingDate": "2024-11-14",
+          "form": "10-Q",
+          "primaryDocument": "form10-q.htm",
+          "reportDate": "2024-09-30"
+        }
+      ],
+      "period_end": "2024-09-30",
+      "period_start": "2024-01-01",
+      "review": {
+        "acceptance_time": "2024-11-14T20:52:36.000Z",
+        "accession": "0001493152-24-045768",
+        "conflict_review": "Later comparative accession 0001493152-25-022438 independently repeats -1,566,598 USD for the exact duration; no value conflict or 10-Q/A correction found.",
+        "consolidation_scope_verified": true,
+        "cutoff_verified": true,
+        "decision": "accepted",
+        "identity_verified": true,
+        "normalized_compustat_value": -1.566598,
+        "period_verified": true,
+        "reason": "Syntec Optics Holdings, Inc. filing identifies CIK 0001866816 and presents unaudited consolidated cash flows for nine months ended 2024-09-30. Exact undimensioned context spans 2024-01-01\u20132024-09-30. Inline fact has no scale attribute, sign=\"-\", unit USD, displayed 1,566,598; Company Facts raw val is -1,566,598 USD. Filing statement presents amounts as dollars (not thousands), so conversion is -1.566598 USD millions. Later 2025 comparative 10-Q repeats the same duration and amount. Original filed/accepted 2024-11-14/2024-11-14T20:52:36Z, before comparison cutoff. Identity/mapping are verified, consolidation scope is consolidated, no contradictory/amended exact fact found, and Compustat oancfy is null.",
+        "unit_scale_sign_verified": true
+      },
+      "submissions_response_sha256": "a4aa503ec45c47d8b9a6e412be85e29d28710a6359ba3567227fc62aced01724"
+    },
+    {
+      "all_matching_period_observations": [
+        {
+          "accn": "0000790816-26-000045",
+          "end": "2026-09-30",
+          "filed": "2026-10-29",
+          "form": "10-Q",
+          "fp": "Q3",
+          "fy": 2026,
+          "start": "2026-01-01",
+          "unit": "USD",
+          "val": 84357000
+        }
+      ],
+      "barrid": "USAIAB1",
+      "cik": "0000790816",
+      "classification": "accepted",
+      "company_name": "BRANDYWINE REALTY TRUST",
+      "companyfacts_response_sha256": "3cca64bff6fa0686b7872a80f53af7c13d4c2a38a849b28af3216a9aeb28615a",
+      "compustat_currency": "USD",
+      "compustat_oancfy": null,
+      "datadate": "2026-09-30",
+      "decision": "accepted",
+      "evidence": {
+        "companyfacts_sha256": "3cca64bff6fa0686b7872a80f53af7c13d4c2a38a849b28af3216a9aeb28615a",
+        "filing_path": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/source_documents/CIK0000790816_000079081626000045_d57417024907a0c003fca00523116e32db135c954a764b75cd5d1bfcbbafb11e.html",
+        "filing_sha256": "d57417024907a0c003fca00523116e32db135c954a764b75cd5d1bfcbbafb11e",
+        "filing_url": "https://www.sec.gov/Archives/edgar/data/790816/000079081626000045/bdn-20260930.htm",
+        "inline_facts": [
+          {
+            "contextref": "c-1",
+            "decimals": "-3",
+            "display_value": "84,357",
+            "format": "ixt:num-dot-decimal",
+            "id": "f-557",
+            "name": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+            "period_end": "2026-09-30",
+            "period_start": "2026-01-01",
+            "scale": "3",
+            "scaled_value": "84357000",
+            "unitref": "usd"
+          },
+          {
+            "contextref": "c-2",
+            "decimals": "-3",
+            "display_value": "84,357",
+            "format": "ixt:num-dot-decimal",
+            "id": "f-1051",
+            "name": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+            "period_end": "2026-09-30",
+            "period_start": "2026-01-01",
+            "scale": "3",
+            "scaled_value": "84357000",
+            "unitref": "usd"
+          }
+        ],
+        "submissions_sha256": "7ff43005361a69fc7ea6a8a7c1d377d7f23d0253c670c2d0cbc705dca544abd7"
+      },
+      "fqtr": 3,
+      "fyearq": 2026,
+      "fyr": 12,
+      "gvkey": "013562",
+      "mapping_relationships": [
+        {
+          "barra_end_date": "2075-12-31",
+          "barra_mapping_status": "mapped",
+          "barra_start_date": "1996-11-27",
+          "barrid": "USAIAB1",
+          "cik": "0000790816",
+          "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+          "compustat_efffrom": "1996-11-26",
+          "compustat_effthru": "2900-01-01",
+          "cusip9": "105368203",
+          "iid": "01",
+          "issuerid": "A00508",
+          "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+          "mapping_status": "mapped_current_cik_metadata",
+          "rootid": "USAIAB1"
+        }
+      ],
+      "matching_period_filings": [
+        {
+          "acceptanceDateTime": "2026-10-29T19:21:42.000Z",
+          "accessionNumber": "0000790816-26-000045",
+          "filingDate": "2026-10-29",
+          "form": "10-Q",
+          "primaryDocument": "bdn-20260930.htm",
+          "reportDate": "2026-09-30"
+        }
+      ],
+      "period_end": "2026-09-30",
+      "period_start": "2026-01-01",
+      "review": {
+        "acceptance_time": "2026-10-29T19:21:42.000Z",
+        "accession": "0000790816-26-000045",
+        "conflict_review": "Both inline facts inspected with contexts/dimensions; equal amounts. Select undimensioned consolidated c-1. No exact-fact amendment or contradictory accession found in archived response.",
+        "consolidation_scope_verified": true,
+        "cutoff_verified": true,
+        "decision": "accepted",
+        "identity_verified": true,
+        "normalized_compustat_value": 84.357,
+        "period_verified": true,
+        "reason": "The undimensioned context c-1 identifies CIK 0000790816 and the consolidated 2026-01-01\u20132026-09-30 duration. The second fact c-2 has the same value and duration but is explicitly dimensioned to Brandywine Operating Partnership L.P.; it is a subsidiary/legal-entity detail, not a competing consolidated amount. Filing statement reports net cash provided by operating activities 84,357 (USD thousands); inline scale=3 yields 84,357,000 USD = 84.357 Compustat USD millions. No sign reversal. Filed and accepted 2026-10-29 19:21:42Z, before 2026-10-29T23:59:59Z. Company Facts has one exact accession observation; no conflicting or amended target observation found in the archived submissions/facts. Current Compustat value is null and mapping/issuer match are verified.",
+        "unit_scale_sign_verified": true
+      },
+      "submissions_response_sha256": "7ff43005361a69fc7ea6a8a7c1d377d7f23d0253c670c2d0cbc705dca544abd7"
+    },
+    {
+      "all_matching_period_observations": [
+        {
+          "accn": "0001717547-26-000076",
+          "end": "2026-09-30",
+          "filed": "2026-10-28",
+          "form": "10-Q",
+          "fp": "Q3",
+          "fy": 2026,
+          "start": "2026-01-01",
+          "unit": "USD",
+          "val": 56989000
+        }
+      ],
+      "barrid": "USBDWA1",
+      "cik": "0001717547",
+      "classification": "accepted",
+      "company_name": "BrightSpire Capital, Inc.",
+      "companyfacts_response_sha256": "f343edc4313460f343d3859cdcaf3df672ccaf9c1163fb658ca75695cfefbc6d",
+      "compustat_currency": "USD",
+      "compustat_oancfy": null,
+      "datadate": "2026-09-30",
+      "decision": "accepted",
+      "evidence": {
+        "companyfacts_sha256": "f343edc4313460f343d3859cdcaf3df672ccaf9c1163fb658ca75695cfefbc6d",
+        "filing_path": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/source_documents/CIK0001717547_000171754726000076_34d595ebf9e94d32ff6d7a34f3ec0cb5e6b06e5f9584be0eb5aebdcf8429e1e3.html",
+        "filing_sha256": "34d595ebf9e94d32ff6d7a34f3ec0cb5e6b06e5f9584be0eb5aebdcf8429e1e3",
+        "filing_url": "https://www.sec.gov/Archives/edgar/data/1717547/000171754726000076/brsp-20260930.htm",
+        "inline_facts": [
+          {
+            "contextref": "c-1",
+            "decimals": "-3",
+            "display_value": "56,989",
+            "format": "ixt:num-dot-decimal",
+            "id": "f-478",
+            "name": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+            "period_end": "2026-09-30",
+            "period_start": "2026-01-01",
+            "scale": "3",
+            "scaled_value": "56989000",
+            "unitref": "usd"
+          }
+        ],
+        "submissions_sha256": "e9d1e687856afbb9980c3d74923b42322b815338031f191b5298d0efe064faaa"
+      },
+      "fqtr": 3,
+      "fyearq": 2026,
+      "fyr": 12,
+      "gvkey": "033066",
+      "mapping_relationships": [
+        {
+          "barra_end_date": "2075-12-31",
+          "barra_mapping_status": "mapped",
+          "barra_start_date": "2021-06-25",
+          "barrid": "USBDWA1",
+          "cik": "0001717547",
+          "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+          "compustat_efffrom": "2021-06-25",
+          "compustat_effthru": "2900-01-01",
+          "cusip9": "10949T109",
+          "iid": "01",
+          "issuerid": "122751",
+          "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+          "mapping_status": "mapped_current_cik_metadata",
+          "rootid": "USBDWA1"
+        }
+      ],
+      "matching_period_filings": [
+        {
+          "acceptanceDateTime": "2026-10-28T20:28:52.000Z",
+          "accessionNumber": "0001717547-26-000076",
+          "filingDate": "2026-10-28",
+          "form": "10-Q",
+          "primaryDocument": "brsp-20260930.htm",
+          "reportDate": "2026-09-30"
+        }
+      ],
+      "period_end": "2026-09-30",
+      "period_start": "2026-01-01",
+      "review": {
+        "acceptance_time": "2026-10-28T20:28:52.000Z",
+        "accession": "0001717547-26-000076",
+        "conflict_review": "No later amendment or conflicting exact-duration observation in archived Company Facts/submissions. Filing inline fact corroborates amount and scope.",
+        "consolidation_scope_verified": true,
+        "cutoff_verified": true,
+        "decision": "accepted",
+        "identity_verified": true,
+        "normalized_compustat_value": 56.989,
+        "period_verified": true,
+        "reason": "Company Facts and filing identify BrightSpire Capital, Inc. and CIK 0001717547; mapped GVKEY/Barrid relationship is valid for period. Filing cash flow statement is consolidated and reports net cash provided by operating activities 56,989 in USD thousands. Undimensioned XBRL context c-1 is exact FY2026 YTD 2026-01-01\u20132026-09-30; scale=3 gives 56,989,000 USD = 56.989 Compustat USD millions. Filing accepted 2026-10-28T20:28:52Z, before cutoff. One exact accession observation; no target amendment/conflicting observation in saved facts/submissions. Compustat oancfy remains null.",
+        "unit_scale_sign_verified": true
+      },
+      "submissions_response_sha256": "e9d1e687856afbb9980c3d74923b42322b815338031f191b5298d0efe064faaa"
+    },
+    {
+      "all_matching_period_observations": [
+        {
+          "accn": "0001347178-26-000002",
+          "end": "2026-09-30",
+          "filed": "2026-10-29",
+          "form": "10-Q",
+          "fp": "Q3",
+          "fy": 2026,
+          "start": "2026-01-01",
+          "unit": "USD",
+          "val": -109723000
+        }
+      ],
+      "barrid": "USA8XB1",
+      "cik": "0001347178",
+      "classification": "accepted",
+      "company_name": "Vanda Pharmaceuticals Inc.",
+      "companyfacts_response_sha256": "c22c1cc2f25654bdf327344da59aee8590caac61b8e982ae291f990dfc793c24",
+      "compustat_currency": "USD",
+      "compustat_oancfy": null,
+      "datadate": "2026-09-30",
+      "decision": "accepted",
+      "evidence": {
+        "companyfacts_sha256": "c22c1cc2f25654bdf327344da59aee8590caac61b8e982ae291f990dfc793c24",
+        "filing_path": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/source_documents/CIK0001347178_000134717826000002_947823252b129cd5bc2e83305f15df83da258ab857e6010245fd4c47b332edac.html",
+        "filing_sha256": "947823252b129cd5bc2e83305f15df83da258ab857e6010245fd4c47b332edac",
+        "filing_url": "https://www.sec.gov/Archives/edgar/data/1347178/000134717826000002/vnda-20260930.htm",
+        "inline_facts": [
+          {
+            "contextref": "c-1",
+            "decimals": "-3",
+            "display_value": "109,723",
+            "format": "ixt:num-dot-decimal",
+            "id": "f-311",
+            "name": "us-gaap:NetCashProvidedByUsedInOperatingActivities",
+            "period_end": "2026-09-30",
+            "period_start": "2026-01-01",
+            "scale": "3",
+            "scaled_value": "-109723000",
+            "sign": "-",
+            "unitref": "usd"
+          }
+        ],
+        "submissions_sha256": "72122dcde4d9748f7e372c89ed980bd3b350c3b548610ff85af6ef75603a0811"
+      },
+      "fqtr": 3,
+      "fyearq": 2026,
+      "fyr": 12,
+      "gvkey": "166435",
+      "mapping_relationships": [
+        {
+          "barra_end_date": "2075-12-31",
+          "barra_mapping_status": "mapped",
+          "barra_start_date": "2006-04-11",
+          "barrid": "USA8XB1",
+          "cik": "0001347178",
+          "cik_source": "comp.company.cik current metadata; not historically point-in-time",
+          "compustat_efffrom": "2003-12-31",
+          "compustat_effthru": "2900-01-01",
+          "cusip9": "921659108",
+          "iid": "01",
+          "issuerid": "A65046",
+          "mapping_source": "comp.sec_idhist:item=CUSIP; exact CUSIP9; inclusive effective interval",
+          "mapping_status": "mapped_current_cik_metadata",
+          "rootid": "USA8XB1"
+        }
+      ],
+      "matching_period_filings": [
+        {
+          "acceptanceDateTime": "2026-10-29T12:00:32.000Z",
+          "accessionNumber": "0001347178-26-000002",
+          "filingDate": "2026-10-29",
+          "form": "10-Q",
+          "primaryDocument": "vnda-20260930.htm",
+          "reportDate": "2026-09-30"
+        }
+      ],
+      "period_end": "2026-09-30",
+      "period_start": "2026-01-01",
+      "review": {
+        "acceptance_time": "2026-10-29T12:00:32.000Z",
+        "accession": "0001347178-26-000002",
+        "conflict_review": "Company Facts and original filing agree; no amended or conflicting exact-period observation found in saved submissions/facts.",
+        "consolidation_scope_verified": true,
+        "cutoff_verified": true,
+        "decision": "accepted",
+        "identity_verified": true,
+        "normalized_compustat_value": -109.723,
+        "period_verified": true,
+        "reason": "Company Facts and filing identify Vanda Pharmaceuticals Inc., CIK 0001347178; mapping to GVKEY/Barrid is valid for period. Consolidated cash flow statement explicitly reports net cash used in operating activities (109,723) in USD thousands. Inline fact is undimensioned c-1, scale=3 and sign=\"-\", exact YTD 2026-01-01\u20132026-09-30; value is -109,723,000 USD = -109.723 Compustat USD millions. Negative OCF is consistent with the statement. Filing accepted 2026-10-29T12:00:32Z before cutoff. One exact accession observation and no amendment/conflicting target observation in archived responses. Compustat oancfy is null.",
+        "unit_scale_sign_verified": true
+      },
+      "submissions_response_sha256": "72122dcde4d9748f7e372c89ed980bd3b350c3b548610ff85af6ef75603a0811"
+    }
+  ],
+  "collection_cutoff": "2026-10-29",
+  "comparison_cutoff": "2026-10-29T23:59:59+00:00",
+  "metric": "operating_cash_flow_ytd",
+  "review_requirements": [
+    "issuer/accounting entity identity",
+    "consolidation scope",
+    "operating cash flow concept",
+    "fiscal YTD period",
+    "currency/sign/scale conversion",
+    "timezone-aware cutoff",
+    "amendment/conflict resolution",
+    "current Compustat null"
+  ],
+  "schema_version": "sec_ocf_candidate_review_v1",
+  "source_manifest": "/home/gunnjake/groups/grp_quant/database/fundamentals/sec_filings/fallback_pilots/ocf_ytd_cohort_2026-11/cohort_decisions_2b6b36637163f96f44a5b9a359d758634404838d4a8af1ab6ad05a643972fe6a.json",
+  "source_manifest_sha256": "2b6b36637163f96f44a5b9a359d758634404838d4a8af1ab6ad05a643972fe6a",
+  "source_run_id": "run_e906597c98025ac25cdf006d",
+  "updated_after_case": "039836|2024-03-31"
+}

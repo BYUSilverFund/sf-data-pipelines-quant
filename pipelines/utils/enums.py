@@ -5,3 +5,4 @@ class DatabaseName(Enum):
     RESEARCH = "research"
     PRODUCTION = "production"
     DEVELOPMENT = "development"
+    FUNDAMENTALS = "fundamentals"

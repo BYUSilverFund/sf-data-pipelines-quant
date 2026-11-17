@@ -9,6 +9,8 @@ from pipelines.all_pipelines import (
     fama_french_5_factors_flow,
 )
 from pipelines.signals_flow import signals_flow
+from pipelines.fundamentals_flow import sec_fundamentals_flow
+from pipelines.compustat_fundamentals import run_compustat_fundamentals
 from pipelines.composite_alphas_flow import composite_alphas_flow
 from pipelines.optimal_weights_flow import optimal_weights_flow
 from pipelines.utils.enums import DatabaseName
@@ -285,6 +287,62 @@ def signals(pipeline_type, database, start, end):
 
             signals_flow(database_instance)
 
+
+@cli.command()
+@click.option(
+    "--source-database",
+    type=click.Choice(VALID_DATABASES, case_sensitive=False),
+    default="development",
+    show_default=True,
+    help="Database whose latest Russell snapshot defines the company universe.",
+)
+@click.option(
+    "--target-database",
+    type=click.Choice([DatabaseName.FUNDAMENTALS.value], case_sensitive=False),
+    default=DatabaseName.FUNDAMENTALS.value,
+    show_default=True,
+    help="Separate grp_quant database where SEC facts are stored.",
+)
+@click.option(
+    "--limit",
+    type=click.IntRange(min=1),
+    default=None,
+    help="Fetch only the first N uniquely mapped CIKs (useful for a small initial run).",
+)
+@click.option(
+    "--output-root",
+    type=click.Path(file_okay=False, dir_okay=True),
+    default=None,
+    help="Override the SEC filing archive root; defaults under the target database.",
+)
+def fundamentals(source_database, target_database, limit, output_root):
+    """Archive SEC filings and selected Company Facts for Russell members."""
+    source = Database(DatabaseName(source_database))
+    target = Database(DatabaseName(target_database))
+    sec_fundamentals_flow(source, target, limit=limit, output_root=output_root)
+
+
+@cli.command("compustat")
+@click.option(
+    "--source-database", type=click.Choice(VALID_DATABASES, case_sensitive=False),
+    default="development", show_default=True,
+    help="Database whose latest Russell snapshot defines the company universe.",
+)
+@click.option("--limit", type=click.IntRange(min=1), default=None,
+              help="Collect only the first N eligible GVKEYs in sorted order.")
+@click.option("--start", type=click.DateTime(formats=["%Y-%m-%d"]), required=True,
+              help="First reporting date to include (YYYY-MM-DD).")
+@click.option("--end", type=click.DateTime(formats=["%Y-%m-%d"]), default=lambda: dt.date.today().isoformat(),
+              show_default=True, help="Last reporting date to include (YYYY-MM-DD).")
+@click.option("--output-root", type=click.Path(file_okay=False, dir_okay=True), default=None,
+              help="Override the Compustat fundamentals output root.")
+def compustat(source_database, limit, start, end, output_root):
+    """Collect annual and quarterly Compustat statements for Russell companies."""
+    start_date = start.date() if hasattr(start, "date") else start
+    end_date = end.date() if hasattr(end, "date") else end
+    if start_date > end_date:
+        raise click.BadParameter("--start must not be after --end", param_hint="--start")
+    run_compustat_fundamentals(source_database.lower(), limit, start_date, end_date, output_root)
 
 @cli.command()
 @click.argument(

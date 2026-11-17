@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from pipelines.utils.factors import factors
 from typing import Optional
 from pipelines.utils.enums import DatabaseName
+from pipelines.utils.fundamentals_schema import fundamentals_table_keys, fundamentals_table_schema
 
 
 class Table:
@@ -166,6 +167,10 @@ class Table:
 class Database:
     def __init__(self, database_name: DatabaseName):
         self._database_name = database_name
+
+    @property
+    def database_name(self) -> DatabaseName:
+        return self._database_name
 
     @property
     def assets_table(self) -> Table:
@@ -480,7 +485,38 @@ class Database:
             },
             ids=["date", "cusip"],
         )
-    
+
+    @property
+    def fundamentals_annual_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="fundamentals_annual",
+            schema=fundamentals_table_schema("annual"),
+            ids=fundamentals_table_keys("annual"),
+        )
+
+    @property
+    def fundamentals_quarterly_table(self) -> Table:
+        return Table(
+            database=self._database_name,
+            name="fundamentals_quarterly",
+            schema=fundamentals_table_schema("quarterly"),
+            ids=fundamentals_table_keys("quarterly"),
+        )
+
+    def fundamentals_quarterly_resolved_table(self, scope_id: str) -> Table:
+        """Open an immutable policy/input-scoped resolved quarterly table."""
+        import re
+        from pipelines.resolved_fundamentals import RESOLVED_COLUMNS
+
+        if not re.fullmatch(r"[0-9a-f]{64}", scope_id):
+            raise ValueError("scope_id must be a lowercase SHA-256")
+        return Table(
+            database=self._database_name,
+            name=f"fundamentals_quarterly_resolved_{scope_id[:16]}",
+            schema=fundamentals_table_schema("quarterly") | RESOLVED_COLUMNS,
+            ids=fundamentals_table_keys("quarterly"),
+        )
 
     @property
     def signals_table(self) -> Table:
