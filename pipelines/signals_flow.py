@@ -63,6 +63,9 @@ def signals_flow(database: Database) -> None:
             .with_columns(pl.col(signal_name).alias("signal_value"))
         ).filter(
                 pl.col(signal_name).is_not_null(),
+                # NaN/inf pass is_not_null(); drop them so they cannot be
+                # written or contaminate same-date scores.
+                pl.col(signal_name).is_finite(),
                 pl.col("predicted_beta").is_not_null(),
                 pl.col("specific_risk").is_not_null(),
             )
