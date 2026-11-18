@@ -55,5 +55,5 @@ def signal_returns_flow(signal_names: list[str], database: Database, active_risk
 if __name__ == '__main__':
     from utils.tables import DatabaseName
     db = Database(DatabaseName.DEVELOPMENT)
-    signal_names = ['reversal', 'momentum', 'beta', 'barra_reversal', 'barra_momentum', 'ivol']
+    signal_names = ['beta', 'barra_reversal', 'barra_momentum', 'ivol']
     signal_returns_flow(signal_names, db)

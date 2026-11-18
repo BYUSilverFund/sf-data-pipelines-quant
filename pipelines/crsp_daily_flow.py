@@ -1,3 +1,4 @@
+import warnings
 from datetime import date
 from pipelines.utils import crsp_schema
 import polars as pl
@@ -42,6 +43,13 @@ def crsp_daily_backfill_flow(
         df = load_crsp_daily_df(
             start_date=date(year, 1, 1), end_date=date(year, 12, 31), user=user
         )
+
+        if df.is_empty():
+            warnings.warn(
+                f"CRSP daily (crsp_m_stock.dsf) returned no rows for {year}; skipping (no file written). "
+                "Legacy CRSP ends in 2024; use crsp-v2 for 2025+."
+            )
+            continue
 
         database.crsp_daily_table.create_if_not_exists(year)
         database.crsp_daily_table.upsert(year, df)

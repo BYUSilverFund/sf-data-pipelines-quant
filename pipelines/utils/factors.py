@@ -16,7 +16,7 @@ factors = sorted(
         "USSLOWL_PROSPECT",
         "USSLOWL_SIZE",
         "USSLOWL_VALUE",
-        # "USSLOWL_NETRET",
+        "USSLOWL_NETRET",
         "USSLOWL_AERODEF",
         "USSLOWL_AIRLINES",
         "USSLOWL_ALUMSTEL",

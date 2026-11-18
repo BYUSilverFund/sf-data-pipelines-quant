@@ -157,8 +157,8 @@ def ivol() -> dict:
 
 # Registry for easy lookup
 SIGNALS = {
-    "momentum": momentum(),
-    "reversal": reversal(),
+    # "momentum": momentum(),  # disabled: plain momentum removed from daily flow
+    # "reversal": reversal(),  # disabled: plain reversal removed from daily flow
     "beta": beta(),
     "barra_reversal": barra_reversal(),
     "barra_momentum": barra_momentum(),

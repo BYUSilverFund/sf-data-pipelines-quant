@@ -1,3 +1,4 @@
+import warnings
 from datetime import date
 from pipelines.utils import crsp_schema
 import polars as pl
@@ -37,6 +38,13 @@ def crsp_events_backfill_flow(
 
     for year in tqdm(years, desc="CRSP Events"):
         year_df = df.filter(pl.col("date").dt.year().eq(year))
+
+        if year_df.is_empty():
+            warnings.warn(
+                f"CRSP events (crsp_m_stock.dse) returned no rows for {year}; skipping (no file written). "
+                "Legacy CRSP ends in 2024; use crsp-v2 for 2025+."
+            )
+            continue
 
         database.crsp_events_table.create_if_not_exists(year)
         database.crsp_events_table.upsert(year, year_df)
