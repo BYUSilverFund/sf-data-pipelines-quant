@@ -235,6 +235,8 @@ Data is stored as yearly Parquet files under:
 
 Each database has its own directory: `production`, `development`, or `research`.
 
+Fama-French 5-factor data is a single file, `<database>/ff5_factors/ff5_factors.parquet`, which is the path `sf_quant.data.load_fama_french()` reads.
+
 ## Ticker to Barra ID lookup
 
 Use the saved `assets` table to resolve ticker symbols to Barra IDs. This table

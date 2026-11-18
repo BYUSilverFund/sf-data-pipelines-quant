@@ -459,7 +459,7 @@ class Database:
     def fama_french_table(self) -> Table:
         return Table(
             database=self._database_name,
-            name="fama_french",
+            name="ff5_factors",
             schema={
                 "date": pl.Date,
                 "mkt_rf": pl.Float64,
