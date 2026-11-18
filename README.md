@@ -235,6 +235,8 @@ Data is stored as yearly Parquet files under:
 
 Each database has its own directory: `production`, `development`, or `research`.
 
+Legacy CRSP tables (`crsp_daily`, `crsp_monthly`, `crsp_events`) end in 2024, because WRDS no longer updates the legacy format. For 2025 onward use `crsp_v2_daily` and `crsp_v2_monthly` (`sf_quant.data.load_crsp_v2_*`). `crsp_v2_daily` has `primaryexch` and `securitytype` in place of the events table's exchange and share codes. Legacy backfills warn and skip years with no source rows instead of writing empty files.
+
 Fama-French 5-factor data is a single file, `<database>/ff5_factors/ff5_factors.parquet`, which is the path `sf_quant.data.load_fama_french()` reads.
 
 ## Ticker to Barra ID lookup
